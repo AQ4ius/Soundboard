@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GRizal Stage Soundboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="dropOverlay" class="drop-overlay hidden">
+        <div class="drop-box">
+            <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            <h3>Drop Audio Files Here</h3>
+            <p>MP3, WAV, OGG, AAC, MP4 audio supported</p>
+        </div>
+    </div>
+
+    <!-- Top App Bar -->
+    <header class="app-header">
+        <div class="header-left">
+            <div class="brand">
+                <div class="brand-badge">PRO</div>
+                <div class="brand-title">
+                    <h1>GRizal <span>Soundboard</span></h1>
+                    <span class="brand-subtitle">Stage & SFX Master Control</span>
+                </div>
+            </div>
+
+            <!-- View Switcher Tabs (Home Folders vs Soundboard) -->
+            <div class="nav-view-switcher">
+                <button id="navHomeFoldersBtn" class="view-switch-btn active" title="View All Soundboards">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span>Home (Soundboards)</span>
+                </button>
+                <button id="navSoundboardBtn" class="view-switch-btn" title="Open Active Soundboard">
+                    <span id="activeSbNavIcon">🎭</span>
+                    <span id="activeSoundboardNavLabel">GRIZAL</span>
+                </button>
+            </div>
+            
+            <div class="status-chips">
+                <div class="status-chip" id="soundCountChip">
+                    <span class="chip-label">Sounds:</span>
+                    <strong id="totalSoundsCount">48</strong>
+                </div>
+                <div class="status-chip playing-chip" id="playingCountChip">
+                    <span class="chip-dot"></span>
+                    <span class="chip-label">Playing:</span>
+                    <strong id="activePlayingCount">0</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="header-center">
+            <div class="search-box">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="searchInput" placeholder="Search sounds, chapters, SFX, or keybinds... (Ctrl+F)" autocomplete="off">
+                <button id="clearSearchBtn" class="clear-btn hidden" title="Clear search">✕</button>
+            </div>
+        </div>
+
+        <div class="header-right">
+            <!-- Mode Toggles -->
+            <div class="mode-toggles">
+                <button id="playbackModeBtn" class="pill-btn" title="Toggle Polyphonic (multiple sounds) vs Solo (exclusive)">
+                    <span class="icon" id="modeIcon">🔀</span>
+                    <span id="modeText">Overlap</span>
+                </button>
+                <button id="retriggerModeBtn" class="pill-btn" title="Toggle Retrigger (Restart) vs Pause when keybind pressed again">
+                    <span class="icon">🔄</span>
+                    <span id="retriggerText">Restart</span>
+                </button>
+            </div>
+
+            <!-- Master Volume -->
+            <div class="master-volume-control">
+                <button id="masterMuteBtn" class="icon-btn" title="Mute/Unmute Master">
+                    <svg id="masterVolumeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                    </svg>
+                </button>
+                <div class="volume-slider-wrap">
+                    <input type="range" id="masterVolumeSlider" min="0" max="100" value="100" title="Master Volume">
+                    <span id="masterVolumeValue">100%</span>
+                </div>
+            </div>
+
+            <!-- Panic Stop -->
+            <button id="panicStopBtn" class="panic-btn" title="Stop all playing audio (Shortcut: Space or Esc)">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="6" y="6" width="12" height="12" rx="2"></rect>
+                </svg>
+                <span>STOP ALL</span>
+                <span class="kbd-hint">Space</span>
+            </button>
+
+            <!-- Actions -->
+            <div class="header-actions">
+                <button id="openAddModalBtn" class="primary-btn" title="Add new sound button">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <span>Add Sound</span>
+                </button>
+                <button id="keybindMapBtn" class="icon-btn-bordered" title="View All Keybinds">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                        <path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M7 16h10"></path>
+                    </svg>
+                </button>
+                <button id="settingsBtn" class="icon-btn-bordered" title="Settings & Presets">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Home / Folders View (Home Screen) -->
+    <section id="homeFoldersView" class="home-folders-view">
+        <div class="home-folders-header">
+            <div class="folders-header-left">
+                <h2>📁 Soundboard Folders</h2>
+                <p>Select a soundboard folder (e.g. <strong>GRIZAL</strong>) to enter its categories and sounds, or create a new folder for a specific soundboard.</p>
+            </div>
+            <div class="folders-header-right">
+                <button id="createFolderBtn" class="primary-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <span>+ New Soundboard Folder</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="foldersGrid" class="folders-grid">
+            <!-- Rendered dynamically by app.js: GRIZAL folder, etc. -->
+        </div>
+    </section>
+
+    <!-- Stage Soundboard View -->
+    <div id="stageSoundboardView" class="stage-view hidden">
+        <!-- Breadcrumb & Folder Title Bar -->
+        <div id="folderBreadcrumbBar" class="folder-breadcrumb-bar">
+            <button id="backToFoldersBtn" class="pill-btn highlight">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                <span>← All Soundboards</span>
+            </button>
+            <div class="current-folder-title">
+                <span class="folder-icon" id="breadcrumbFolderIcon">🎭</span>
+                <span id="breadcrumbFolderName">GRIZAL</span>
+                <span class="folder-chip-count" id="breadcrumbFolderCount">48 sounds • 16 categories</span>
+            </div>
+        </div>
+
+        <!-- Navigation / Category Filters Bar -->
+        <nav class="categories-bar">
+            <button id="catScrollLeftBtn" class="cat-nav-btn" title="Scroll left" aria-label="Scroll categories left">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </button>
+            <div class="categories-scroll" id="categoryChipsContainer">
+                <!-- Populated dynamically: All, Favorites, General SFX, Kabanata 1..15, Custom -->
+            </div>
+            <button id="catScrollRightBtn" class="cat-nav-btn" title="Scroll right" aria-label="Scroll categories right">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+            </button>
+            <div class="view-controls">
+                <button id="addCategoryBtn" class="pill-btn highlight small" title="Add a new category/chapter to this soundboard">
+                    <span>+ Category</span>
+                </button>
+                <button id="viewGridDensityBtn" class="pill-btn small" title="Toggle Compact / Normal Grid">
+                    <span class="icon">⊞</span>
+                    <span id="densityText">Normal</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Soundboard Stage -->
+        <main class="main-content">
+            <!-- Sound Cards Container -->
+            <div id="soundboardGrid" class="sound-grid">
+                <!-- Rendered by app.js -->
+            </div>
+
+            <!-- Empty state -->
+            <div id="emptyState" class="empty-state hidden">
+                <div class="empty-icon">🔍</div>
+                <h3>No sounds found</h3>
+                <p>Try a different search query or filter, or add a new sound button.</p>
+                <button class="primary-btn" onclick="document.getElementById('openAddModalBtn').click()">+ Add Sound Now</button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Persistent Pinned Category Bottom Window / Tray -->
+    <section id="generalSfxTray" class="general-sfx-tray hidden" data-tray="pinned">
+        <div class="sfx-tray-header">
+            <div class="sfx-tray-left">
+                <span class="sfx-pulse-dot"></span>
+                <strong class="sfx-tray-title">⚡ Pinned Window:</strong>
+                <span class="pinned-cat-badge" id="pinnedCatNameBadge">General SFX</span>
+                <span class="sfx-tray-badge" id="generalSfxCountBadge">2 sounds</span>
+                <span class="sfx-tray-desc">Drag any category tab here or switch:</span>
+                <select id="pinnedCategoryDropdown" class="mini-select-tray" title="Switch pinned category"></select>
+            </div>
+            <div class="sfx-tray-right">
+                <button id="toggleSfxTrayBtn" class="sfx-toggle-btn" title="Collapse / Expand Pinned Category Tray">
+                    <span id="sfxTrayToggleIcon">▼</span>
+                    <span id="sfxTrayToggleText">Collapse</span>
+                </button>
+            </div>
+        </div>
+        <div class="sfx-tray-drop-banner" id="trayDropBanner">
+            <span class="banner-icon">📥</span>
+            <span>Drop category here to pin to bottom window!</span>
+        </div>
+        <div id="generalSfxList" class="sfx-tray-list">
+            <!-- Populated dynamically with pinned category sounds -->
+        </div>
+    </section>
+
+    <!-- Sticky Now Playing Dock -->
+    <footer id="nowPlayingDock" class="now-playing-dock hidden">
+        <div class="dock-container">
+            <div class="dock-left">
+                <div class="now-playing-indicator">
+                    <span class="bar bar1"></span>
+                    <span class="bar bar2"></span>
+                    <span class="bar bar3"></span>
+                    <span class="bar bar4"></span>
+                </div>
+                <div class="dock-info">
+                    <div class="dock-title" id="dockTrackTitle">Playing Audio</div>
+                    <div class="dock-subtitle" id="dockTrackSub">Chapter / SFX</div>
+                </div>
+            </div>
+
+            <div class="dock-center">
+                <div class="dock-timeline">
+                    <span class="dock-time" id="dockCurrentTime">0:00</span>
+                    <input type="range" id="dockProgressBar" class="dock-progress" min="0" max="100" value="0">
+                    <span class="dock-time" id="dockDuration">0:00</span>
+                </div>
+            </div>
+
+            <div class="dock-right">
+                <button id="dockLoopBtn" class="dock-btn" title="Toggle Loop for this track">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 1 21 5 17 9"></polyline>
+                        <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                        <polyline points="7 23 3 19 7 15"></polyline>
+                        <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+                    </svg>
+                </button>
+                <div class="dock-volume">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                    </svg>
+                    <input type="range" id="dockVolumeSlider" min="0" max="100" value="100" title="Track Volume">
+                </div>
+                <button id="dockPauseBtn" class="dock-play-btn" title="Pause / Resume">
+                    <svg id="dockPauseIcon" viewBox="0 0 24 24" fill="currentColor">
+                        <rect x="6" y="4" width="4" height="16"></rect>
+                        <rect x="14" y="4" width="4" height="16"></rect>
+                    </svg>
+                </button>
+                <button id="dockStopBtn" class="dock-stop-btn" title="Stop This Track">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <rect x="6" y="6" width="12" height="12"></rect>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ADD SOUND MODAL -->
+    <div id="addSoundModal" class="modal-backdrop hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>Add New Sound</h2>
+                <button class="modal-close" id="closeAddModalBtn">✕</button>
+            </div>
+            <form id="addSoundForm" class="modal-body">
+                <!-- File Picker / Drop Area -->
+                <div class="form-group">
+                    <label>Select Audio File</label>
+                    <div class="file-drop-zone" id="modalFileDropZone">
+                        <input type="file" id="soundFileInput" accept="audio/*,video/mp4" style="display:none;" multiple>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <p id="fileDropLabel">Click to browse audio files or drag & drop here</p>
+                        <span class="file-hint">Supports MP3, WAV, OGG, M4A, FLAC, MP4 (multiple files allowed!)</span>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group flex-2">
+                        <label for="newSoundTitle">Sound Title / Button Name</label>
+                        <input type="text" id="newSoundTitle" placeholder="e.g. Thunder Strike or Climax Theme" required>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label for="newSoundCategory">Category / Chapter</label>
+                        <select id="newSoundCategory" class="select-input" required>
+                            <!-- Populated dynamically with all categories -->
+                        </select>
+                        <div id="newCategoryCustomGroup" class="custom-category-group hidden">
+                            <input type="text" id="newCategoryCustomInput" placeholder="Enter new category name..." autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Keybind Shortcut</label>
+                        <div class="keybind-recorder-input">
+                            <input type="text" id="newSoundKeybind" placeholder="Click button to record" readonly>
+                            <button type="button" id="recordNewKeybindBtn" class="record-btn">Press Key</button>
+                            <button type="button" id="clearNewKeybindBtn" class="clear-key-btn">Clear</button>
+                        </div>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label for="newSoundColor">Card Accent Color</label>
+                        <div class="color-picker-row">
+                            <label class="color-dot"><input type="radio" name="accentColor" value="#f59e0b" checked><span style="background:#f59e0b;"></span></label>
+                            <label class="color-dot"><input type="radio" name="accentColor" value="#ef4444"><span style="background:#ef4444;"></span></label>
+                            <label class="color-dot"><input type="radio" name="accentColor" value="#10b981"><span style="background:#10b981;"></span></label>
+                            <label class="color-dot"><input type="radio" name="accentColor" value="#06b6d4"><span style="background:#06b6d4;"></span></label>
+                            <label class="color-dot"><input type="radio" name="accentColor" value="#3b82f6"><span style="background:#3b82f6;"></span></label>
+                            <label class="color-dot"><input type="radio" name="accentColor" value="#8b5cf6"><span style="background:#8b5cf6;"></span></label>
+                            <label class="color-dot"><input type="radio" name="accentColor" value="#ec4899"><span style="background:#ec4899;"></span></label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="newSoundLoop">
+                            <span>Loop audio continuously (recommended for BGM)</span>
+                        </label>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="newSoundIsBgm">
+                            <span>Mark as Background Music (BGM)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="secondary-btn" id="cancelAddBtn">Cancel</button>
+                    <button type="submit" class="primary-btn" id="confirmAddBtn">Create Sound Button</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- EDIT SOUND MODAL -->
+    <div id="editSoundModal" class="modal-backdrop hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>Edit Sound</h2>
+                <button class="modal-close" id="closeEditModalBtn">✕</button>
+            </div>
+            <form id="editSoundForm" class="modal-body">
+                <input type="hidden" id="editSoundId">
+
+                <div class="form-row">
+                    <div class="form-group flex-2">
+                        <label for="editSoundTitle">Button Name / Title</label>
+                        <input type="text" id="editSoundTitle" required>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label for="editSoundCategory">Category / Chapter</label>
+                        <select id="editSoundCategory" class="select-input" required>
+                            <!-- Populated dynamically with all categories -->
+                        </select>
+                        <div id="editCategoryCustomGroup" class="custom-category-group hidden">
+                            <input type="text" id="editCategoryCustomInput" placeholder="Enter new category name..." autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Keybind Shortcut</label>
+                        <div class="keybind-recorder-input">
+                            <input type="text" id="editSoundKeybind" placeholder="None" readonly>
+                            <button type="button" id="recordEditKeybindBtn" class="record-btn">Press Key</button>
+                            <button type="button" id="clearEditKeybindBtn" class="clear-key-btn">Clear</button>
+                        </div>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label>Accent Color</label>
+                        <div class="color-picker-row" id="editColorPickerRow">
+                            <label class="color-dot"><input type="radio" name="editAccentColor" value="#f59e0b"><span style="background:#f59e0b;"></span></label>
+                            <label class="color-dot"><input type="radio" name="editAccentColor" value="#ef4444"><span style="background:#ef4444;"></span></label>
+                            <label class="color-dot"><input type="radio" name="editAccentColor" value="#10b981"><span style="background:#10b981;"></span></label>
+                            <label class="color-dot"><input type="radio" name="editAccentColor" value="#06b6d4"><span style="background:#06b6d4;"></span></label>
+                            <label class="color-dot"><input type="radio" name="editAccentColor" value="#3b82f6"><span style="background:#3b82f6;"></span></label>
+                            <label class="color-dot"><input type="radio" name="editAccentColor" value="#8b5cf6"><span style="background:#8b5cf6;"></span></label>
+                            <label class="color-dot"><input type="radio" name="editAccentColor" value="#ec4899"><span style="background:#ec4899;"></span></label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label for="editSoundVolume">Default Volume (<span id="editVolumeDisplay">100%</span>)</label>
+                        <input type="range" id="editSoundVolume" min="0" max="100" value="100">
+                    </div>
+                    <div class="form-group flex-1">
+                        <label for="editSoundPlaybackRate">Playback Speed (<span id="editSpeedDisplay">1.0x</span>)</label>
+                        <select id="editSoundPlaybackRate" class="select-input">
+                            <option value="0.5">0.5x (Slow-mo)</option>
+                            <option value="0.75">0.75x</option>
+                            <option value="1.0" selected>1.0x (Normal)</option>
+                            <option value="1.25">1.25x</option>
+                            <option value="1.5">1.5x (Fast)</option>
+                            <option value="2.0">2.0x (Double Speed)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="editSoundLoop">
+                            <span>Loop this audio continuously</span>
+                        </label>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="editSoundIsBgm">
+                            <span>Background Music (BGM) tag</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="modal-footer space-between">
+                    <button type="button" class="danger-btn" id="deleteSoundBtn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                        <span>Delete Sound</span>
+                    </button>
+                    <div class="modal-actions-right">
+                        <button type="button" class="secondary-btn" id="cancelEditBtn">Cancel</button>
+                        <button type="submit" class="primary-btn">Save Changes</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- QUICK KEYBIND RECORDING OVERLAY -->
+    <div id="keybindCaptureModal" class="modal-backdrop capture-backdrop hidden">
+        <div class="capture-box">
+            <div class="capture-pulse"></div>
+            <h3>Press Any Key or Combo</h3>
+            <p>Assigning keybind for: <strong id="captureSoundTitle">Sound Title</strong></p>
+            <div class="current-detected-key" id="detectedKeyDisplay">Listening...</div>
+            <div class="capture-tips">
+                <span>Supports letters (A-Z), numbers (0-9), F1-F12, Space, modifiers like Shift+A, Ctrl+1, etc.</span>
+                <span>Press <strong>Esc</strong> to cancel, or <strong>Backspace</strong> to unbind.</span>
+            </div>
+            <button id="cancelCaptureBtn" class="secondary-btn">Cancel</button>
+        </div>
+    </div>
+
+    <!-- KEYBIND MAP / CHEATSHEET MODAL -->
+    <div id="keybindMapModal" class="modal-backdrop hidden">
+        <div class="modal-card wide-modal">
+            <div class="modal-header">
+                <h2>Active Keybinds Cheat Sheet</h2>
+                <button class="modal-close" id="closeKeybindMapBtn">✕</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-description">Trigger any sound instantly from your keyboard. Click on any row to change its keybind.</p>
+                <div class="keybind-table-wrap">
+                    <table class="keybind-table">
+                        <thead>
+                            <tr>
+                                <th>Keybind</th>
+                                <th>Sound Title</th>
+                                <th>Category</th>
+                                <th>Type</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="keybindTableBody">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SETTINGS & BACKUP MODAL -->
+    <div id="settingsModal" class="modal-backdrop hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>Soundboard Settings & Backup</h2>
+                <button class="modal-close" id="closeSettingsModalBtn">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-section">
+                    <h3>Backup & Restore</h3>
+                    <p>Export your custom soundboard configuration, names, and keybinds to a backup file, or restore one.</p>
+                    <div class="settings-actions">
+                        <button id="exportConfigBtn" class="pill-btn highlight">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            <span>Export Config (JSON)</span>
+                        </button>
+                        <button id="importConfigBtn" class="pill-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                            <span>Import Config (JSON)</span>
+                        </button>
+                        <input type="file" id="importConfigFile" accept=".json" style="display:none;">
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>Reset Options</h3>
+                    <p>Reset to the original 48 GRizal Audio stage sounds and initial keybind mappings.</p>
+                    <button id="resetDefaultsBtn" class="danger-btn outline">Reset to Default Sounds</button>
+                </div>
+
+                <div class="settings-section">
+                    <h3>Keyboard Shortcuts</h3>
+                    <ul class="shortcuts-list">
+                        <li><kbd>Space</kbd> or <kbd>Esc</kbd> <span>Panic Stop all active audio</span></li>
+                        <li><kbd>Ctrl</kbd> + <kbd>F</kbd> <span>Focus search bar</span></li>
+                        <li><kbd>M</kbd> (when not in search) <span>Mute / Unmute master volume</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CREATE / RENAME SOUNDBOARD FOLDER MODAL -->
+    <div id="folderModal" class="modal-backdrop hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2 id="folderModalTitle">Create New Soundboard Folder</h2>
+                <button class="modal-close" id="closeFolderModalBtn">✕</button>
+            </div>
+            <form id="folderForm" class="modal-body">
+                <input type="hidden" id="folderOriginalId">
+                <div class="form-group">
+                    <label for="folderNameInput">Soundboard Name</label>
+                    <input type="text" id="folderNameInput" placeholder="e.g. GRIZAL, Gaming SFX, or D&D Campaign" required autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="folderDescInput">Description (Optional)</label>
+                    <input type="text" id="folderDescInput" placeholder="e.g. Specific soundboard for play acts, characters & SFX" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label>Folder Icon</label>
+                    <div class="emoji-picker-row" id="folderEmojiPickerRow">
+                        <label class="emoji-chip-radio"><input type="radio" name="folderIcon" value="🎭" checked><span>🎭</span></label>
+                        <label class="emoji-chip-radio"><input type="radio" name="folderIcon" value="📁"><span>📁</span></label>
+                        <label class="emoji-chip-radio"><input type="radio" name="folderIcon" value="🎮"><span>🎮</span></label>
+                        <label class="emoji-chip-radio"><input type="radio" name="folderIcon" value="🎙️"><span>🎙️</span></label>
+                        <label class="emoji-chip-radio"><input type="radio" name="folderIcon" value="⚔️"><span>⚔️</span></label>
+                        <label class="emoji-chip-radio"><input type="radio" name="folderIcon" value="🎬"><span>🎬</span></label>
+                        <label class="emoji-chip-radio"><input type="radio" name="folderIcon" value="🎵"><span>🎵</span></label>
+                        <label class="emoji-chip-radio"><input type="radio" name="folderIcon" value="⚡"><span>⚡</span></label>
+                        <label class="emoji-chip-radio"><input type="radio" name="folderIcon" value="🔔"><span>🔔</span></label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Folder Color Accent</label>
+                    <div class="color-picker-row" id="folderColorPickerRow">
+                        <label class="color-dot"><input type="radio" name="folderColor" value="#f59e0b" checked><span style="background:#f59e0b;"></span></label>
+                        <label class="color-dot"><input type="radio" name="folderColor" value="#ef4444"><span style="background:#ef4444;"></span></label>
+                        <label class="color-dot"><input type="radio" name="folderColor" value="#10b981"><span style="background:#10b981;"></span></label>
+                        <label class="color-dot"><input type="radio" name="folderColor" value="#06b6d4"><span style="background:#06b6d4;"></span></label>
+                        <label class="color-dot"><input type="radio" name="folderColor" value="#3b82f6"><span style="background:#3b82f6;"></span></label>
+                        <label class="color-dot"><input type="radio" name="folderColor" value="#8b5cf6"><span style="background:#8b5cf6;"></span></label>
+                        <label class="color-dot"><input type="radio" name="folderColor" value="#ec4899"><span style="background:#ec4899;"></span></label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="secondary-btn" id="cancelFolderBtn">Cancel</button>
+                    <button type="submit" class="primary-btn" id="submitFolderBtn">Save Soundboard</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- DELETE SOUNDBOARD FOLDER CONFIRMATION MODAL -->
+    <div id="deleteFolderModal" class="modal-backdrop hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>Delete Soundboard Folder</h2>
+                <button class="modal-close" id="closeDeleteFolderModalBtn">✕</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete soundboard folder <strong id="deleteFolderNameText"></strong>?</p>
+                <p style="font-size:12px; color:var(--text-muted);">All categories and sound buttons in this soundboard will be removed.</p>
+                <div class="modal-footer space-between" style="margin-top:12px;">
+                    <button type="button" class="secondary-btn" id="cancelDeleteFolderBtn">Cancel</button>
+                    <button type="button" class="danger-btn" id="confirmDeleteFolderBtn">Confirm Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CREATE NEW CATEGORY MODAL (Inside Soundboard) -->
+    <div id="categoryModal" class="modal-backdrop hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>Add Category to Soundboard</h2>
+                <button class="modal-close" id="closeCategoryModalBtn">✕</button>
+            </div>
+            <form id="categoryForm" class="modal-body">
+                <div class="form-group">
+                    <label for="categoryNameInput">Category / Chapter Name</label>
+                    <input type="text" id="categoryNameInput" placeholder="e.g. Kabanata 16 or Battle SFX" required autocomplete="off">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="secondary-btn" id="cancelCategoryBtn">Cancel</button>
+                    <button type="submit" class="primary-btn">Add Category</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- RENAME CATEGORY MODAL -->
+    <div id="renameCategoryModal" class="modal-backdrop hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>Rename Category</h2>
+                <button class="modal-close" id="closeRenameCategoryModalBtn">✕</button>
+            </div>
+            <form id="renameCategoryForm" class="modal-body">
+                <input type="hidden" id="renameCategoryOldName">
+                <div class="form-group">
+                    <label for="renameCategoryNewName">New Category Name</label>
+                    <input type="text" id="renameCategoryNewName" placeholder="e.g. Act 1: The Banquet" required autocomplete="off">
+                    <span class="file-hint" style="margin-top:6px; display:block;">All sounds currently assigned to this category will automatically update.</span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="secondary-btn" id="cancelRenameCategoryBtn">Cancel</button>
+                    <button type="submit" class="primary-btn">Save Name</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- DELETE CATEGORY MODAL -->
+    <div id="deleteCategoryModal" class="modal-backdrop hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>Delete Category</h2>
+                <button class="modal-close" id="closeDeleteCategoryModalBtn">✕</button>
+            </div>
+            <form id="deleteCategoryForm" class="modal-body">
+                <input type="hidden" id="deleteCategoryTargetName">
+                <p style="font-size:14px; margin-bottom: 12px;">Are you sure you want to delete category <strong id="deleteCategoryTargetText"></strong>?</p>
+                <div id="deleteCategorySoundsNotice" class="category-delete-notice">
+                    <div style="font-weight: 700; margin-bottom: 6px; font-size: 13px;" id="deleteCategorySoundCountText">This category has sounds.</div>
+                    <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 10px;">What would you like to do with sounds in this category?</div>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <label class="radio-label">
+                            <input type="radio" name="deleteCategoryAction" value="move" checked>
+                            <span>Move sounds to category:</span>
+                            <select id="deleteCategoryMoveTarget" class="select-input mini-select" style="display:inline-block; width:auto; margin-left:6px;"></select>
+                        </label>
+                        <label class="radio-label" style="color: var(--accent-red);">
+                            <input type="radio" name="deleteCategoryAction" value="delete">
+                            <span>Delete these sounds from soundboard</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer space-between" style="margin-top: 16px;">
+                    <button type="button" class="secondary-btn" id="cancelDeleteCategoryBtn">Cancel</button>
+                    <button type="submit" class="danger-btn">Delete Category</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="sounds-data.js"></script>
+    <script src="db.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

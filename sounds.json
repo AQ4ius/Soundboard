@@ -1,0 +1,338 @@
+﻿[
+    {
+        "name":  "error sfx",
+        "file":  "audio/error sfx.mp3",
+        "category":  "General SFX",
+        "isBgm":  false,
+        "size":  141825
+    },
+    {
+        "name":  "glitch",
+        "file":  "audio/glitch.mp3",
+        "category":  "General SFX",
+        "isBgm":  false,
+        "size":  122390
+    },
+    {
+        "name":  "kab 1 - bgm damaso",
+        "file":  "audio/kab 1 - bgm damaso.mp3",
+        "category":  "Kabanata 1",
+        "isBgm":  true,
+        "size":  927869
+    },
+    {
+        "name":  "kab 1 - bgm spanish",
+        "file":  "audio/kab 1 - bgm spanish.mp3",
+        "category":  "Kabanata 1",
+        "isBgm":  true,
+        "size":  3841044
+    },
+    {
+        "name":  "kab 1 - sfx boot process",
+        "file":  "audio/kab 1 - sfx boot process.mp3",
+        "category":  "Kabanata 1",
+        "isBgm":  false,
+        "size":  563409
+    },
+    {
+        "name":  "kab 1 - sfx boot sound",
+        "file":  "audio/kab 1 - sfx boot sound.mp3",
+        "category":  "Kabanata 1",
+        "isBgm":  false,
+        "size":  51456
+    },
+    {
+        "name":  "kab 1 - sfx enter key",
+        "file":  "audio/kab 1 - sfx enter key.mp3",
+        "category":  "Kabanata 1",
+        "isBgm":  false,
+        "size":  67584
+    },
+    {
+        "name":  "kab 1 - sfx error beep",
+        "file":  "audio/kab 1 - sfx error beep.mp3",
+        "category":  "Kabanata 1",
+        "isBgm":  false,
+        "size":  390373
+    },
+    {
+        "name":  "kab 1 - sfx glitch (2)",
+        "file":  "audio/kab 1 - sfx glitch (2).mp3",
+        "category":  "Kabanata 1",
+        "isBgm":  false,
+        "size":  99840
+    },
+    {
+        "name":  "kab 1 - sfx glitch",
+        "file":  "audio/kab 1 - sfx glitch.mp3",
+        "category":  "Kabanata 1",
+        "isBgm":  false,
+        "size":  36864
+    },
+    {
+        "name":  "kab 2 - bgm spanish",
+        "file":  "audio/kab 2 - bgm spanish.mp3",
+        "category":  "Kabanata 2",
+        "isBgm":  true,
+        "size":  4678635
+    },
+    {
+        "name":  "kab 2 - sfx alarm",
+        "file":  "audio/kab 2 - sfx alarm.mp3",
+        "category":  "Kabanata 2",
+        "isBgm":  false,
+        "size":  56006
+    },
+    {
+        "name":  "kab 2 - sfx glitch",
+        "file":  "audio/kab 2 - sfx glitch.mp3",
+        "category":  "Kabanata 2",
+        "isBgm":  false,
+        "size":  99840
+    },
+    {
+        "name":  "kab 3 - bgm damaso",
+        "file":  "audio/kab 3 - bgm damaso.mp3",
+        "category":  "Kabanata 3",
+        "isBgm":  true,
+        "size":  3265097
+    },
+    {
+        "name":  "kab 3 - bgm spanish",
+        "file":  "audio/kab 3 - bgm spanish.mp3",
+        "category":  "Kabanata 3",
+        "isBgm":  true,
+        "size":  2625619
+    },
+    {
+        "name":  "kab 3 - sfx glitch",
+        "file":  "audio/kab 3 - sfx glitch.mp3",
+        "category":  "Kabanata 3",
+        "isBgm":  false,
+        "size":  369408
+    },
+    {
+        "name":  "kab 4 - bgm end",
+        "file":  "audio/kab 4 - bgm end.mp3",
+        "category":  "Kabanata 4",
+        "isBgm":  true,
+        "size":  3608640
+    },
+    {
+        "name":  "kab 4 - bgm first",
+        "file":  "audio/kab 4 - bgm first.mp3",
+        "category":  "Kabanata 4",
+        "isBgm":  true,
+        "size":  482324
+    },
+    {
+        "name":  "kab 4 - bgm sad",
+        "file":  "audio/kab 4 - bgm sad.mp3",
+        "category":  "Kabanata 4",
+        "isBgm":  true,
+        "size":  2068898
+    },
+    {
+        "name":  "kab 4 - bgm talk",
+        "file":  "audio/kab 4 - bgm talk.mp3",
+        "category":  "Kabanata 4",
+        "isBgm":  true,
+        "size":  7681253
+    },
+    {
+        "name":  "kab 4 - sfx notif",
+        "file":  "audio/kab 4 - sfx notif.mp3",
+        "category":  "Kabanata 4",
+        "isBgm":  false,
+        "size":  65280
+    },
+    {
+        "name":  "kab 5 - bgm friar",
+        "file":  "audio/kab 5 - bgm friar.mp3",
+        "category":  "Kabanata 5",
+        "isBgm":  true,
+        "size":  7793267
+    },
+    {
+        "name":  "kab 5 - bgm spanish",
+        "file":  "audio/kab 5 - bgm spanish.mp3",
+        "category":  "Kabanata 5",
+        "isBgm":  true,
+        "size":  2053015
+    },
+    {
+        "name":  "kab 5 - sfx click",
+        "file":  "audio/kab 5 - sfx click.mp3",
+        "category":  "Kabanata 5",
+        "isBgm":  false,
+        "size":  33024
+    },
+    {
+        "name":  "kab 5 - sfx fireworks (2)",
+        "file":  "audio/kab 5 - sfx fireworks (2).mp3",
+        "category":  "Kabanata 5",
+        "isBgm":  false,
+        "size":  192768
+    },
+    {
+        "name":  "kab 5 - sfx fireworks (3)",
+        "file":  "audio/kab 5 - sfx fireworks (3).mp3",
+        "category":  "Kabanata 5",
+        "isBgm":  false,
+        "size":  192768
+    },
+    {
+        "name":  "kab 5 - sfx fireworks",
+        "file":  "audio/kab 5 - sfx fireworks.mp3",
+        "category":  "Kabanata 5",
+        "isBgm":  false,
+        "size":  192768
+    },
+    {
+        "name":  "kab 6 - bgm entrance",
+        "file":  "audio/kab 6 - bgm entrance.mp3",
+        "category":  "Kabanata 6",
+        "isBgm":  true,
+        "size":  4932096
+    },
+    {
+        "name":  "kab 7 - bgm after leonora",
+        "file":  "audio/kab 7 - bgm after leonora.mp3",
+        "category":  "Kabanata 7",
+        "isBgm":  true,
+        "size":  2823732
+    },
+    {
+        "name":  "kab 7 - bgm intro narration",
+        "file":  "audio/kab 7 - bgm intro narration.mp3",
+        "category":  "Kabanata 7",
+        "isBgm":  true,
+        "size":  4084297
+    },
+    {
+        "name":  "kab 7 - bgm leonora",
+        "file":  "audio/kab 7 - bgm leonora.mp4",
+        "category":  "Kabanata 7",
+        "isBgm":  true,
+        "size":  54958200
+    },
+    {
+        "name":  "kab 7 - sfx carriage",
+        "file":  "audio/kab 7 - sfx carriage.mp3",
+        "category":  "Kabanata 7",
+        "isBgm":  false,
+        "size":  300288
+    },
+    {
+        "name":  "glitchy sfx burst",
+        "file":  "audio/10/glitchy sfx burst.mp3",
+        "category":  "Kabanata 10",
+        "isBgm":  false,
+        "size":  329906
+    },
+    {
+        "name":  "slow casual bgm",
+        "file":  "audio/10/slow casual bgm.mp3",
+        "category":  "Kabanata 10",
+        "isBgm":  true,
+        "size":  8131533
+    },
+    {
+        "name":  "switch sfx",
+        "file":  "audio/10/switch sfx.mp3",
+        "category":  "Kabanata 10",
+        "isBgm":  false,
+        "size":  128659
+    },
+    {
+        "name":  "kabanata11 bgm",
+        "file":  "audio/11/kabanata11 bgm.mp3",
+        "category":  "Kabanata 11",
+        "isBgm":  true,
+        "size":  4334791
+    },
+    {
+        "name":  "eerie bgm",
+        "file":  "audio/12/eerie bgm.mp3",
+        "category":  "Kabanata 12",
+        "isBgm":  true,
+        "size":  14356408
+    },
+    {
+        "name":  "dramatic bgm",
+        "file":  "audio/13/dramatic bgm.mp3",
+        "category":  "Kabanata 13",
+        "isBgm":  true,
+        "size":  7789224
+    },
+    {
+        "name":  "kabanata14 bgm",
+        "file":  "audio/14/kabanata14 bgm.mp3",
+        "category":  "Kabanata 14",
+        "isBgm":  true,
+        "size":  86702008
+    },
+    {
+        "name":  "thunder 1",
+        "file":  "audio/14/thunder 1.mp3",
+        "category":  "Kabanata 14",
+        "isBgm":  false,
+        "size":  86776
+    },
+    {
+        "name":  "thunder 2",
+        "file":  "audio/14/thunder 2.mp3",
+        "category":  "Kabanata 14",
+        "isBgm":  false,
+        "size":  275990
+    },
+    {
+        "name":  "gunshot",
+        "file":  "audio/15/gunshot.mp3",
+        "category":  "Kabanata 15",
+        "isBgm":  false,
+        "size":  279751
+    },
+    {
+        "name":  "tense bgm",
+        "file":  "audio/15/tense bgm.mp3",
+        "category":  "Kabanata 15",
+        "isBgm":  true,
+        "size":  2988754
+    },
+    {
+        "name":  "thunder lightning rain",
+        "file":  "audio/15/thunder lightning rain.mp3",
+        "category":  "Kabanata 15",
+        "isBgm":  false,
+        "size":  4319118
+    },
+    {
+        "name":  "boot",
+        "file":  "audio/8/boot.mp3",
+        "category":  "Kabanata 8",
+        "isBgm":  false,
+        "size":  322383
+    },
+    {
+        "name":  "critical glitch sound",
+        "file":  "audio/8/critical glitch sound.mp3",
+        "category":  "Kabanata 8",
+        "isBgm":  false,
+        "size":  116747
+    },
+    {
+        "name":  "moderate rhythmic bgm",
+        "file":  "audio/8/moderate rhythmic bgm.mp3",
+        "category":  "Kabanata 8",
+        "isBgm":  true,
+        "size":  8496411
+    },
+    {
+        "name":  "kabanata9 bgm",
+        "file":  "audio/9/kabanata9 bgm.mp3",
+        "category":  "Kabanata 9",
+        "isBgm":  true,
+        "size":  3687766
+    }
+]

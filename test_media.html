@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head><title>Testing</title></head>
+<body>
+<div id="output">Testing...</div>
+<script>
+async function test() {
+    let res = "";
+    try {
+        const audio = new Audio("audio/kab 7 - bgm leonora.mp4");
+        audio.preload = "auto";
+        await new Promise((resolve, reject) => {
+            audio.oncanplay = () => resolve("Audio canplay OK");
+            audio.onerror = () => reject("Audio error code=" + (audio.error ? audio.error.code : "null"));
+            setTimeout(() => reject("Audio timeout"), 3000);
+        });
+        res += "Audio: OK | ";
+    } catch (e) {
+        res += "Audio failed: " + e + " | ";
+    }
+
+    try {
+        const video = document.createElement("video");
+        video.src = "audio/kab 7 - bgm leonora.mp4";
+        video.preload = "auto";
+        await new Promise((resolve, reject) => {
+            video.oncanplay = () => resolve("Video canplay OK");
+            video.onerror = () => reject("Video error code=" + (video.error ? video.error.code : "null"));
+            setTimeout(() => reject("Video timeout"), 3000);
+        });
+        res += "Video: OK | ";
+    } catch (e) {
+        res += "Video failed: " + e + " | ";
+    }
+
+    document.title = res;
+    document.getElementById('output').innerText = res;
+}
+test();
+</script>
+</body>
+</html>
