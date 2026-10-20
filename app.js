@@ -2,14 +2,48 @@
 (function () {
     'use strict';
 
-    // State
-    const SOUNDBOARDS_KEY = 'grizal_soundboards_v2';
-    const ACTIVE_SB_KEY = 'grizal_active_soundboard_id_v2';
-    const STORAGE_KEY = 'grizal_soundboard_sounds_v1';
-    const SETTINGS_KEY = 'grizal_soundboard_settings_v1';
+    // State & Storage Keys
+    const USERS_KEY = 'aq_users_v1';
+    const CURRENT_USER_ID_KEY = 'aq_current_user_id_v1';
+    const SOUNDBOARDS_LEGACY_KEY = 'grizal_soundboards_v2';
+    const STORAGE_LEGACY_KEY = 'grizal_soundboard_sounds_v1';
+    const SETTINGS_KEY = 'aqsound_settings_v1';
 
+    const DEFAULT_ACCOUNTS = [
+        {
+            id: 'guest',
+            username: 'user',
+            displayName: 'User',
+            email: 'user@aqsound.local',
+            role: 'user',
+            password: '',
+            avatarLetter: 'U',
+            avatarBg: '#3b82f6'
+        },
+        {
+            id: 'owner',
+            username: 'AQ4ius',
+            displayName: 'AQ4ius (Owner)',
+            email: 'aqu4gmr@gmail.com',
+            role: 'owner',
+            password: 'aqsound_owner',
+            avatar: 'AQSoundboard_Logo.png'
+        },
+        {
+            id: 'grizal',
+            username: 'grizal',
+            displayName: 'GRizal Production',
+            email: 'grizal.team@gmail.com',
+            role: 'team',
+            password: 'grizal_production',
+            avatarLetter: 'G',
+            avatarBg: '#8b5cf6'
+        }
+    ];
+
+    let currentUser = null;
     let soundboards = [];
-    let activeSoundboardId = 'grizal';
+    let activeSoundboardId = 'sb_default';
     let sounds = [];
     const audioPool = new Map(); // id -> HTMLAudioElement
     const activeAudios = new Map(); // id -> { audio, intervalId, sound }
@@ -195,10 +229,400 @@
 
     const dropOverlay = document.getElementById('dropOverlay');
 
+    // User Accounts & Authentication Elements
+    const userAccountBtn = document.getElementById('userAccountBtn');
+    const userAvatarImg = document.getElementById('userAvatarImg');
+    const userDisplayName = document.getElementById('userDisplayName');
+    const userRoleBadge = document.getElementById('userRoleBadge');
+    const accountDropdownMenu = document.getElementById('accountDropdownMenu');
+    const menuAvatarImg = document.getElementById('menuAvatarImg');
+    const menuUserName = document.getElementById('menuUserName');
+    const menuUserEmail = document.getElementById('menuUserEmail');
+    const menuRoleTag = document.getElementById('menuRoleTag');
+    const openEditProfileBtn = document.getElementById('openEditProfileBtn');
+    const openAuthModalBtn = document.getElementById('openAuthModalBtn');
+    const signOutBtn = document.getElementById('signOutBtn');
+
+    // Auth & Google Modals
+    const authModal = document.getElementById('authModal');
+    const closeAuthModalBtn = document.getElementById('closeAuthModalBtn');
+    const authGoogleBtn = document.getElementById('authGoogleBtn');
+    const authTabSignIn = document.getElementById('authTabSignIn');
+    const authTabSignUp = document.getElementById('authTabSignUp');
+    const authSignInForm = document.getElementById('authSignInForm');
+    const authSignInUsername = document.getElementById('authSignInUsername');
+    const authSignInPassword = document.getElementById('authSignInPassword');
+    const openForgotPasswordBtn = document.getElementById('openForgotPasswordBtn');
+    const authSignUpForm = document.getElementById('authSignUpForm');
+    const authSignUpName = document.getElementById('authSignUpName');
+    const authSignUpUsername = document.getElementById('authSignUpUsername');
+    const authSignUpPassword = document.getElementById('authSignUpPassword');
+
+    const googleAuthModal = document.getElementById('googleAuthModal');
+    const closeGoogleAuthModalBtn = document.getElementById('closeGoogleAuthModalBtn');
+    const googleAuthForm = document.getElementById('googleAuthForm');
+    const googleCustomName = document.getElementById('googleCustomName');
+    const googleCustomEmail = document.getElementById('googleCustomEmail');
+
+    // Edit Profile Modal
+    const editProfileModal = document.getElementById('editProfileModal');
+    const closeEditProfileModalBtn = document.getElementById('closeEditProfileModalBtn');
+    const cancelEditProfileBtn = document.getElementById('cancelEditProfileBtn');
+    const editProfileForm = document.getElementById('editProfileForm');
+    const editProfileAvatarPreview = document.getElementById('editProfileAvatarPreview');
+    const editProfileHeaderName = document.getElementById('editProfileHeaderName');
+    const editProfileHeaderRole = document.getElementById('editProfileHeaderRole');
+    const profileDisplayNameInput = document.getElementById('profileDisplayNameInput');
+    const profileUsernameInput = document.getElementById('profileUsernameInput');
+    const profileEmailInput = document.getElementById('profileEmailInput');
+    const profileCurrentPasswordInput = document.getElementById('profileCurrentPasswordInput');
+    const profileNewPasswordInput = document.getElementById('profileNewPasswordInput');
+
+    // Forgot Password Modal
+    const forgotPasswordModal = document.getElementById('forgotPasswordModal');
+    const closeForgotPasswordModalBtn = document.getElementById('closeForgotPasswordModalBtn');
+    const cancelForgotPasswordBtn = document.getElementById('cancelForgotPasswordBtn');
+    const forgotPasswordForm = document.getElementById('forgotPasswordForm');
+    const forgotUsernameInput = document.getElementById('forgotUsernameInput');
+    const forgotNewPasswordInput = document.getElementById('forgotNewPasswordInput');
+    const forgotConfirmPasswordInput = document.getElementById('forgotConfirmPasswordInput');
+
     let pendingFilesToAdd = [];
+
+    // ================= USER ACCOUNT MANAGEMENT =================
+    function getUsers() {
+        try {
+            const saved = localStorage.getItem(USERS_KEY);
+            if (saved) {
+                const list = JSON.parse(saved);
+                if (Array.isArray(list) && list.length > 0) return list;
+            }
+        } catch (e) {
+            console.warn('Failed to parse users', e);
+        }
+        return DEFAULT_ACCOUNTS.map(a => Object.assign({}, a));
+    }
+
+    function saveUsers(usersList) {
+        try {
+            localStorage.setItem(USERS_KEY, JSON.stringify(usersList));
+        } catch (e) {
+            console.error('Failed to save users', e);
+        }
+    }
+
+    function getCurrentUser() {
+        if (currentUser) return currentUser;
+        const users = getUsers();
+        const savedId = localStorage.getItem(CURRENT_USER_ID_KEY);
+        if (savedId) {
+            currentUser = users.find(u => u.id === savedId);
+        }
+        if (!currentUser) {
+            // Default to standard website visitor/user account (perspective of the user)
+            currentUser = users.find(u => u.id === 'guest') || users[0];
+        }
+        return currentUser;
+    }
+
+    function getSoundboardsStorageKey() {
+        const user = getCurrentUser();
+        return `aq_soundboards_${user.id}_v2`;
+    }
+
+    function getActiveSbStorageKey() {
+        const user = getCurrentUser();
+        return `aq_active_sb_${user.id}_v2`;
+    }
+
+    function updateUserHeaderUI() {
+        const user = getCurrentUser();
+        if (!user) return;
+
+        if (userDisplayName) userDisplayName.textContent = user.displayName || user.username;
+
+        if (userRoleBadge) {
+            if (user.role === 'owner') {
+                userRoleBadge.textContent = '👑 Owner';
+                userRoleBadge.className = 'user-role-badge owner';
+            } else if (user.role === 'team') {
+                userRoleBadge.textContent = '🎭 Team';
+                userRoleBadge.className = 'user-role-badge team';
+            } else {
+                userRoleBadge.textContent = '👤 User';
+                userRoleBadge.className = 'user-role-badge user';
+            }
+        }
+
+        // Header button avatar
+        if (userAvatarImg && userAccountBtn) {
+            let letterEl = userAccountBtn.querySelector('.header-avatar-letter');
+            if (user.avatar) {
+                userAvatarImg.src = user.avatar;
+                userAvatarImg.style.display = 'block';
+                if (letterEl) letterEl.remove();
+            } else {
+                userAvatarImg.style.display = 'none';
+                if (!letterEl) {
+                    letterEl = document.createElement('div');
+                    letterEl.className = 'google-acc-avatar-letter header-avatar-letter';
+                    letterEl.style.width = '26px';
+                    letterEl.style.height = '26px';
+                    letterEl.style.fontSize = '12px';
+                    userAccountBtn.insertBefore(letterEl, userAvatarImg);
+                }
+                letterEl.textContent = (user.displayName || user.username || 'U')[0].toUpperCase();
+                letterEl.style.backgroundColor = user.avatarBg || '#3b82f6';
+            }
+        }
+
+        // Dropdown menu header
+        if (menuUserName) menuUserName.textContent = user.displayName || user.username;
+        if (menuUserEmail) menuUserEmail.textContent = user.email || `${user.username.toLowerCase()}@aqsound.local`;
+        if (menuRoleTag) {
+            if (user.role === 'owner') {
+                menuRoleTag.textContent = '👑 Owner Account';
+                menuRoleTag.className = 'role-tag owner';
+            } else if (user.role === 'team') {
+                menuRoleTag.textContent = '🎭 GRizal Team Account';
+                menuRoleTag.className = 'role-tag team';
+            } else {
+                menuRoleTag.textContent = '👤 Personal Account';
+                menuRoleTag.className = 'role-tag user';
+            }
+        }
+
+        if (menuAvatarImg) {
+            let menuLetterEl = document.getElementById('menuAvatarLetterCircle');
+            if (user.avatar) {
+                menuAvatarImg.src = user.avatar;
+                menuAvatarImg.style.display = 'block';
+                if (menuLetterEl) menuLetterEl.remove();
+            } else {
+                menuAvatarImg.style.display = 'none';
+                if (!menuLetterEl) {
+                    menuLetterEl = document.createElement('div');
+                    menuLetterEl.id = 'menuAvatarLetterCircle';
+                    menuLetterEl.className = 'google-acc-avatar-letter';
+                    menuAvatarImg.parentNode.insertBefore(menuLetterEl, menuAvatarImg);
+                }
+                menuLetterEl.textContent = (user.displayName || user.username || 'U')[0].toUpperCase();
+                menuLetterEl.style.backgroundColor = user.avatarBg || '#3b82f6';
+            }
+        }
+    }
+
+    async function switchAccount(userId) {
+        stopAllSounds();
+
+        const users = getUsers();
+        let target = users.find(u => u.id === userId || u.username.toLowerCase() === userId.toLowerCase());
+        if (!target) {
+            showToast('Account not found.', 'error');
+            return;
+        }
+
+        currentUser = target;
+        localStorage.setItem(CURRENT_USER_ID_KEY, target.id);
+
+        if (accountDropdownMenu) accountDropdownMenu.classList.add('hidden');
+        if (authModal) authModal.classList.add('hidden');
+        if (googleAuthModal) googleAuthModal.classList.add('hidden');
+
+        updateUserHeaderUI();
+        await loadSoundboards();
+        renderFolders();
+        renderCategories();
+        renderSounds();
+        renderGeneralSfxTray();
+        updateBreadcrumb();
+        switchMainView('home');
+
+        showToast(`Signed in as ${target.displayName}`, 'success');
+    }
+
+    function handleSignOut() {
+        stopAllSounds();
+        const users = getUsers();
+        let guestUser = users.find(u => u.id === 'guest');
+        if (!guestUser) {
+            guestUser = {
+                id: 'guest',
+                username: 'user',
+                displayName: 'User',
+                email: 'user@aqsound.local',
+                role: 'user',
+                avatarLetter: 'U',
+                avatarBg: '#3b82f6'
+            };
+            users.unshift(guestUser);
+            saveUsers(users);
+        }
+        switchAccount('guest');
+        showToast('Signed out. Reset to personal User soundboard.', 'info');
+    }
+
+    function openEditProfileModal() {
+        const user = getCurrentUser();
+        if (!user || !editProfileModal) return;
+
+        if (profileDisplayNameInput) profileDisplayNameInput.value = user.displayName || user.username || '';
+        if (profileUsernameInput) profileUsernameInput.value = user.username || '';
+        if (profileEmailInput) profileEmailInput.value = user.email || '';
+        if (profileCurrentPasswordInput) profileCurrentPasswordInput.value = '';
+        if (profileNewPasswordInput) profileNewPasswordInput.value = '';
+
+        if (editProfileHeaderName) editProfileHeaderName.textContent = user.displayName || user.username || 'User';
+        if (editProfileHeaderRole) {
+            if (user.role === 'owner') {
+                editProfileHeaderRole.textContent = '👑 Owner Account';
+                editProfileHeaderRole.className = 'role-tag owner';
+            } else if (user.role === 'team') {
+                editProfileHeaderRole.textContent = '🎭 GRizal Team Account';
+                editProfileHeaderRole.className = 'role-tag team';
+            } else {
+                editProfileHeaderRole.textContent = '👤 Personal Account';
+                editProfileHeaderRole.className = 'role-tag user';
+            }
+        }
+
+        if (editProfileAvatarPreview) {
+            editProfileAvatarPreview.textContent = (user.displayName || user.username || 'U')[0].toUpperCase();
+            editProfileAvatarPreview.style.backgroundColor = user.avatarBg || '#3b82f6';
+        }
+
+        if (accountDropdownMenu) accountDropdownMenu.classList.add('hidden');
+        editProfileModal.classList.remove('hidden');
+        profileDisplayNameInput.focus();
+    }
+
+    function handleEditProfileSubmit(e) {
+        e.preventDefault();
+        const user = getCurrentUser();
+        if (!user) return;
+
+        const newName = profileDisplayNameInput.value.trim();
+        const newUsername = profileUsernameInput.value.trim();
+        const newEmail = profileEmailInput.value.trim();
+        const curPwd = profileCurrentPasswordInput.value;
+        const newPwd = profileNewPasswordInput.value;
+
+        if (!newName || !newUsername) {
+            showToast('Display Name and Username are required.', 'warning');
+            return;
+        }
+
+        const users = getUsers();
+        // Check username uniqueness if changed
+        if (newUsername.toLowerCase() !== user.username.toLowerCase()) {
+            if (users.some(u => u.id !== user.id && u.username.toLowerCase() === newUsername.toLowerCase())) {
+                showToast('That username is already taken by another account.', 'warning');
+                return;
+            }
+        }
+
+        // Check password change
+        if (newPwd) {
+            if (newPwd.length < 4) {
+                showToast('New password must be at least 4 characters long.', 'warning');
+                return;
+            }
+            if (user.password) {
+                let valid = (curPwd === user.password);
+                if (!valid && user.id === 'owner' && (curPwd === 'aq4ius' || curPwd === 'aqsound')) valid = true;
+                if (!valid && user.id === 'grizal' && curPwd === 'grizal') valid = true;
+                if (!valid) {
+                    showToast('Current password does not match.', 'error');
+                    return;
+                }
+            }
+            user.password = newPwd;
+        }
+
+        user.displayName = newName;
+        user.username = newUsername;
+        user.email = newEmail;
+        user.avatarLetter = newName[0].toUpperCase();
+
+        const idx = users.findIndex(u => u.id === user.id);
+        if (idx !== -1) {
+            users[idx] = Object.assign({}, user);
+        } else {
+            users.push(user);
+        }
+        saveUsers(users);
+        currentUser = user;
+
+        updateUserHeaderUI();
+        if (editProfileModal) editProfileModal.classList.add('hidden');
+        showToast('Account profile successfully updated!', 'success');
+    }
+
+    function openForgotPasswordModal() {
+        if (authModal) authModal.classList.add('hidden');
+        if (forgotUsernameInput) forgotUsernameInput.value = authSignInUsername ? authSignInUsername.value.trim() : '';
+        if (forgotNewPasswordInput) forgotNewPasswordInput.value = '';
+        if (forgotConfirmPasswordInput) forgotConfirmPasswordInput.value = '';
+        if (forgotPasswordModal) forgotPasswordModal.classList.remove('hidden');
+        if (forgotUsernameInput) forgotUsernameInput.focus();
+    }
+
+    function handleForgotPasswordSubmit(e) {
+        e.preventDefault();
+        const targetInput = forgotUsernameInput.value.trim().toLowerCase();
+        const newPwd = forgotNewPasswordInput.value;
+        const confirmPwd = forgotConfirmPasswordInput.value;
+
+        if (!targetInput) {
+            showToast('Please enter your username or registered email.', 'warning');
+            return;
+        }
+
+        if (newPwd.length < 4) {
+            showToast('Password must be at least 4 characters long.', 'warning');
+            return;
+        }
+
+        if (newPwd !== confirmPwd) {
+            showToast('New passwords do not match. Please re-enter.', 'warning');
+            return;
+        }
+
+        const users = getUsers();
+        let found = users.find(u => 
+            u.username.toLowerCase() === targetInput || 
+            (u.email && u.email.toLowerCase() === targetInput) ||
+            (u.id && u.id.toLowerCase() === targetInput)
+        );
+
+        if (!found && (targetInput === 'owner' || targetInput === 'aq4ius')) {
+            found = users.find(u => u.id === 'owner');
+        }
+        if (!found && targetInput === 'grizal') {
+            found = users.find(u => u.id === 'grizal');
+        }
+
+        if (!found) {
+            showToast('Account not found with that username or email.', 'error');
+            return;
+        }
+
+        found.password = newPwd;
+        const idx = users.findIndex(u => u.id === found.id);
+        if (idx !== -1) {
+            users[idx] = found;
+        }
+        saveUsers(users);
+
+        if (forgotPasswordModal) forgotPasswordModal.classList.add('hidden');
+        switchAccount(found.id);
+        showToast(`Password successfully reset! Signed in as ${found.displayName}.`, 'success');
+    }
 
     // ================= INITIALIZATION =================
     async function init() {
+        getCurrentUser();
+        updateUserHeaderUI();
         loadSettings();
         await loadSoundboards();
         setupEventListeners();
@@ -225,11 +649,11 @@
         let sb = soundboards.find(item => item.id === activeSoundboardId);
         if (!sb) {
             sb = soundboards[0] || {
-                id: 'grizal',
-                name: 'GRIZAL',
-                description: 'Official GRizal Stage Play Soundboard with chapters and SFX',
-                icon: '🎭',
-                color: '#f59e0b',
+                id: 'sb_' + Date.now(),
+                name: 'My Soundboard',
+                description: 'Personal audio collection',
+                icon: '📁',
+                color: '#3b82f6',
                 sounds: [],
                 customCategories: []
             };
@@ -239,44 +663,72 @@
     }
 
     async function loadSoundboards() {
+        const user = getCurrentUser();
+        const storageKey = getSoundboardsStorageKey();
+        const activeKey = getActiveSbStorageKey();
+
         try {
-            const saved = localStorage.getItem(SOUNDBOARDS_KEY);
+            const saved = localStorage.getItem(storageKey);
             if (saved) {
                 soundboards = JSON.parse(saved);
+            } else {
+                soundboards = [];
             }
         } catch (e) {
             console.warn('Failed to load soundboards from storage', e);
+            soundboards = [];
         }
 
-        // If no soundboards yet, create default GRIZAL soundboard (migrating from v1 sounds or defaults)
+        // If no soundboards yet for this account:
         if (!soundboards || soundboards.length === 0) {
-            let initialSounds = [];
-            try {
-                const savedSounds = localStorage.getItem(STORAGE_KEY);
-                if (savedSounds) {
-                    initialSounds = JSON.parse(savedSounds);
-                } else if (window.DEFAULT_SOUNDS && Array.isArray(window.DEFAULT_SOUNDS)) {
-                    initialSounds = JSON.parse(JSON.stringify(window.DEFAULT_SOUNDS));
+            if (user.role === 'owner' || user.id === 'owner' || user.id === 'grizal' || user.role === 'team') {
+                // Owner and GRizal group have the full 48-track GRizal soundboard
+                let initialSounds = [];
+                try {
+                    const legacy = localStorage.getItem(SOUNDBOARDS_LEGACY_KEY) || localStorage.getItem(STORAGE_LEGACY_KEY);
+                    if (legacy) {
+                        const parsed = JSON.parse(legacy);
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            initialSounds = parsed[0].sounds || parsed;
+                        }
+                    }
+                } catch (err) {}
+                if (!initialSounds || initialSounds.length === 0) {
+                    if (window.DEFAULT_SOUNDS && Array.isArray(window.DEFAULT_SOUNDS)) {
+                        initialSounds = JSON.parse(JSON.stringify(window.DEFAULT_SOUNDS));
+                    }
                 }
-            } catch (err) {
-                initialSounds = (window.DEFAULT_SOUNDS) ? JSON.parse(JSON.stringify(window.DEFAULT_SOUNDS)) : [];
-            }
 
-            soundboards = [
-                {
-                    id: 'grizal',
-                    name: 'GRIZAL',
-                    description: 'Stage Play & Sound Effects Master Control for GRizal acts and chapters',
-                    icon: '🎭',
-                    color: '#f59e0b',
-                    sounds: initialSounds,
-                    customCategories: []
-                }
-            ];
+                soundboards = [
+                    {
+                        id: 'grizal',
+                        name: 'GRIZAL',
+                        description: 'Stage Play & Sound Effects Master Control for GRizal acts and chapters',
+                        icon: '🎭',
+                        color: '#3b82f6',
+                        sounds: initialSounds,
+                        customCategories: []
+                    }
+                ];
+            } else {
+                // Any other regular user / custom Google user / guest:
+                // They do NOT have the GRizal folder! Clean personal soundboard.
+                soundboards = [
+                    {
+                        id: 'sb_' + Date.now(),
+                        name: 'My Soundboard',
+                        description: `Personal soundboard for ${user.displayName || user.username}`,
+                        icon: '🎵',
+                        color: '#3b82f6',
+                        sounds: [],
+                        customCategories: ['General SFX', 'Music', 'Voice']
+                    }
+                ];
+            }
             saveSoundboards();
         }
 
-        const savedActiveId = localStorage.getItem(ACTIVE_SB_KEY);
+        const savedActiveId = localStorage.getItem(activeKey);
         if (savedActiveId && soundboards.some(sb => sb.id === savedActiveId)) {
             activeSoundboardId = savedActiveId;
         } else {
@@ -284,7 +736,7 @@
         }
 
         const activeSb = getActiveSoundboard();
-        sounds = activeSb.sounds;
+        sounds = activeSb.sounds || [];
 
         // Restore custom blobs from IndexedDB if any
         for (const sound of sounds) {
@@ -308,15 +760,15 @@
         try {
             const serialized = soundboards.map(sb => {
                 const sbCopy = Object.assign({}, sb);
-                sbCopy.sounds = sb.sounds.map(s => {
+                sbCopy.sounds = (sb.sounds || []).map(s => {
                     const copy = Object.assign({}, s);
                     if (copy.customBlobId) copy.src = '';
                     return copy;
                 });
                 return sbCopy;
             });
-            localStorage.setItem(SOUNDBOARDS_KEY, JSON.stringify(serialized));
-            localStorage.setItem(ACTIVE_SB_KEY, activeSoundboardId);
+            localStorage.setItem(getSoundboardsStorageKey(), JSON.stringify(serialized));
+            localStorage.setItem(getActiveSbStorageKey(), activeSoundboardId);
         } catch (e) {
             console.error('Failed to save soundboards to localStorage', e);
         }
@@ -802,7 +1254,7 @@
             ).join('');
             const moreCount = categories.length > 4 ? `<span class="folder-sound-pill">+${categories.length - 4} more</span>` : '';
 
-            const color = sb.color || '#f59e0b';
+            const color = sb.color || '#3b82f6';
             const icon = sb.icon || '📁';
 
             return `
@@ -810,7 +1262,7 @@
                     <div class="folder-top">
                         <div class="folder-icon-wrap">${icon}</div>
                         <div style="display:flex; gap:6px; align-items:center;">
-                            ${playingCount > 0 ? `<span class="folder-count-badge" style="background:rgba(245,158,11,0.2); border-color:#f59e0b; color:#f59e0b;">▶ ${playingCount} playing</span>` : ''}
+                            ${playingCount > 0 ? `<span class="folder-count-badge" style="background:rgba(59,130,246,0.2); border-color:#3b82f6; color:#3b82f6;">▶ ${playingCount} playing</span>` : ''}
                             <span class="folder-count-badge">${soundCount} sounds</span>
                         </div>
                     </div>
@@ -1406,7 +1858,7 @@
             const isPlaying = active ? !active.audio.paused : false;
             const keyLabel = sound.keybind ? sound.keybind.toUpperCase() : '+ Set';
             const hasKey = !!sound.keybind;
-            const color = sound.color || '#f59e0b';
+            const color = sound.color || '#3b82f6';
 
             return `
                 <div class="sound-card ${isPlaying ? 'is-playing' : ''}" 
@@ -1887,6 +2339,211 @@
         importConfigFile.addEventListener('change', handleImportConfig);
         resetDefaultsBtn.addEventListener('click', handleResetDefaults);
 
+        // User Account Menu Dropdown toggle
+        if (userAccountBtn && accountDropdownMenu) {
+            userAccountBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                accountDropdownMenu.classList.toggle('hidden');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (accountDropdownMenu && !accountDropdownMenu.contains(e.target) && !userAccountBtn.contains(e.target)) {
+                    accountDropdownMenu.classList.add('hidden');
+                }
+            });
+        }
+
+        // Open Edit Profile Modal button
+        if (openEditProfileBtn) {
+            openEditProfileBtn.addEventListener('click', openEditProfileModal);
+        }
+
+        // Open Auth Modal button
+        if (openAuthModalBtn) {
+            openAuthModalBtn.addEventListener('click', () => {
+                if (accountDropdownMenu) accountDropdownMenu.classList.add('hidden');
+                if (authModal) authModal.classList.remove('hidden');
+            });
+        }
+
+        // Sign Out button
+        if (signOutBtn) {
+            signOutBtn.addEventListener('click', () => {
+                if (accountDropdownMenu) accountDropdownMenu.classList.add('hidden');
+                handleSignOut();
+            });
+        }
+
+        // Auth Modal Close & Tabs
+        if (closeAuthModalBtn && authModal) {
+            closeAuthModalBtn.addEventListener('click', () => authModal.classList.add('hidden'));
+        }
+
+        if (authTabSignIn && authTabSignUp && authSignInForm && authSignUpForm) {
+            authTabSignIn.addEventListener('click', () => {
+                authTabSignIn.classList.add('active');
+                authTabSignUp.classList.remove('active');
+                authSignInForm.classList.remove('hidden');
+                authSignUpForm.classList.add('hidden');
+            });
+
+            authTabSignUp.addEventListener('click', () => {
+                authTabSignUp.classList.add('active');
+                authTabSignIn.classList.remove('active');
+                authSignUpForm.classList.remove('hidden');
+                authSignInForm.classList.add('hidden');
+            });
+        }
+
+        // Auth Forms Submissions
+        if (authSignInForm) {
+            authSignInForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const inputVal = authSignInUsername.value.trim();
+                const inputPwd = authSignInPassword ? authSignInPassword.value : '';
+                if (!inputVal) return;
+
+                const users = getUsers();
+                const lower = inputVal.toLowerCase();
+                let found = users.find(u => 
+                    u.username.toLowerCase() === lower || 
+                    (u.email && u.email.toLowerCase() === lower) ||
+                    (u.id && u.id.toLowerCase() === lower)
+                );
+
+                if (!found && (lower === 'owner' || lower === 'aq4ius')) {
+                    found = users.find(u => u.id === 'owner');
+                } else if (!found && lower === 'grizal') {
+                    found = users.find(u => u.id === 'grizal');
+                }
+
+                if (!found) {
+                    showToast('Account not found. Please create an account or sign in with Google.', 'error');
+                    return;
+                }
+
+                // Password verification
+                if (found.password) {
+                    let valid = (inputPwd === found.password);
+                    if (!valid && found.id === 'owner' && (inputPwd === 'aq4ius' || inputPwd === 'aqsound')) valid = true;
+                    if (!valid && found.id === 'grizal' && inputPwd === 'grizal') valid = true;
+                    if (!valid) {
+                        showToast('Incorrect password. Please try again or use "Forgot password?".', 'error');
+                        return;
+                    }
+                }
+
+                switchAccount(found.id);
+            });
+        }
+
+        if (authSignUpForm) {
+            authSignUpForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const name = authSignUpName.value.trim();
+                const username = authSignUpUsername.value.trim();
+                const password = authSignUpPassword ? authSignUpPassword.value : '';
+                if (!username || !name) return;
+
+                if (password && password.length < 4) {
+                    showToast('Password must be at least 4 characters long.', 'warning');
+                    return;
+                }
+
+                const users = getUsers();
+                if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
+                    showToast('That username is already taken. Please choose another.', 'warning');
+                    return;
+                }
+
+                const newUser = {
+                    id: 'user_' + Date.now(),
+                    username: username,
+                    displayName: name,
+                    email: `${username.toLowerCase()}@aqsound.local`,
+                    role: 'user',
+                    password: password,
+                    avatarLetter: name[0].toUpperCase(),
+                    avatarBg: '#0ea5e9'
+                };
+
+                users.push(newUser);
+                saveUsers(users);
+                switchAccount(newUser.id);
+                showToast(`Welcome, ${name}! Your private soundboard is ready.`, 'success');
+            });
+        }
+
+        // Forgot Password Modal Triggers & Form
+        if (openForgotPasswordBtn) {
+            openForgotPasswordBtn.addEventListener('click', openForgotPasswordModal);
+        }
+        if (closeForgotPasswordModalBtn && forgotPasswordModal) {
+            closeForgotPasswordModalBtn.addEventListener('click', () => forgotPasswordModal.classList.add('hidden'));
+        }
+        if (cancelForgotPasswordBtn && forgotPasswordModal) {
+            cancelForgotPasswordBtn.addEventListener('click', () => {
+                forgotPasswordModal.classList.add('hidden');
+                if (authModal) authModal.classList.remove('hidden');
+            });
+        }
+        if (forgotPasswordForm) {
+            forgotPasswordForm.addEventListener('submit', handleForgotPasswordSubmit);
+        }
+
+        // Edit Profile Modal Triggers & Form
+        if (closeEditProfileModalBtn && editProfileModal) {
+            closeEditProfileModalBtn.addEventListener('click', () => editProfileModal.classList.add('hidden'));
+        }
+        if (cancelEditProfileBtn && editProfileModal) {
+            cancelEditProfileBtn.addEventListener('click', () => editProfileModal.classList.add('hidden'));
+        }
+        if (editProfileForm) {
+            editProfileForm.addEventListener('submit', handleEditProfileSubmit);
+        }
+
+        // Google Sign In Button
+        if (authGoogleBtn && googleAuthModal) {
+            authGoogleBtn.addEventListener('click', () => {
+                if (authModal) authModal.classList.add('hidden');
+                googleAuthModal.classList.remove('hidden');
+            });
+        }
+        if (closeGoogleAuthModalBtn && googleAuthModal) {
+            closeGoogleAuthModalBtn.addEventListener('click', () => googleAuthModal.classList.add('hidden'));
+        }
+
+        if (googleAuthForm) {
+            googleAuthForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = googleCustomEmail ? googleCustomEmail.value.trim() : '';
+                const name = googleCustomName ? googleCustomName.value.trim() : '';
+                if (!email) {
+                    showToast('Please enter your Google email address.', 'warning');
+                    return;
+                }
+
+                const users = getUsers();
+                let user = users.find(u => u.email && u.email.toLowerCase() === email.toLowerCase());
+                if (!user) {
+                    const fallbackName = name || email.split('@')[0];
+                    user = {
+                        id: 'google_' + Date.now(),
+                        username: email.split('@')[0],
+                        displayName: fallbackName,
+                        email: email,
+                        role: 'user',
+                        password: '',
+                        avatarLetter: fallbackName[0].toUpperCase(),
+                        avatarBg: '#3b82f6'
+                    };
+                    users.push(user);
+                    saveUsers(users);
+                }
+                switchAccount(user.id);
+            });
+        }
+
         // Close modal on backdrop click
         document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
             backdrop.addEventListener('click', (e) => {
@@ -2161,7 +2818,7 @@
             }
         }
         const checkedColor = document.querySelector('input[name="accentColor"]:checked');
-        const color = checkedColor ? checkedColor.value : '#f59e0b';
+        const color = checkedColor ? checkedColor.value : '#3b82f6';
         const isBgm = newSoundIsBgm.checked;
         const loop = newSoundLoop.checked;
         const singleKeybind = newSoundKeybind.value.trim().toLowerCase();
@@ -2222,7 +2879,7 @@
         if (editCategoryCustomInput) editCategoryCustomInput.value = '';
 
         // Set radio color
-        const color = sound.color || '#f59e0b';
+        const color = sound.color || '#3b82f6';
         const colorRadio = document.querySelector(`input[name="editAccentColor"][value="${color}"]`);
         if (colorRadio) {
             colorRadio.checked = true;
@@ -2398,7 +3055,7 @@
                     volume: 1.0,
                     playbackRate: 1.0,
                     keybind: '',
-                    color: isBgm ? '#3b82f6' : '#f59e0b',
+                    color: isBgm ? '#3b82f6' : '#60a5fa',
                     favorite: false
                 });
             }
@@ -2434,7 +3091,7 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `GRizal_Soundboards_Backup_${new Date().toISOString().slice(0, 10)}.json`;
+        a.download = `AQSound_Soundboards_Backup_${new Date().toISOString().slice(0, 10)}.json`;
         a.click();
         URL.revokeObjectURL(url);
     }
@@ -2485,13 +3142,13 @@
     }
 
     function handleResetDefaults() {
-        if (!confirm('Are you sure you want to reset to default GRizal audio sounds? Any custom sound configurations will be reset.')) {
+        if (!confirm('Are you sure you want to reset your soundboards? Custom sound configurations will be reset.')) {
             return;
         }
 
         stopAllSounds();
-        localStorage.removeItem(SOUNDBOARDS_KEY);
-        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(getSoundboardsStorageKey());
+        localStorage.removeItem(getActiveSbStorageKey());
         soundboards = [];
         loadSoundboards().then(() => {
             renderCategories();

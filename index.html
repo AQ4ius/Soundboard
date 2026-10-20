@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GRizal Stage Soundboard</title>
+    <title>AQSound | Audio Master Control</title>
+    <link rel="icon" type="image/png" href="AQSoundboard_Logo.png">
+    <link rel="apple-touch-icon" href="AQSoundboard_Logo.png">
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,10 +28,10 @@
     <header class="app-header">
         <div class="header-left">
             <div class="brand">
-                <div class="brand-badge">PRO</div>
+                <img src="AQSoundboard_Logo.png" alt="AQSound Logo" class="brand-logo-img">
                 <div class="brand-title">
-                    <h1>GRizal <span>Soundboard</span></h1>
-                    <span class="brand-subtitle">Stage & SFX Master Control</span>
+                    <h1>AQSound <span>Board</span></h1>
+                    <span class="brand-subtitle">Audio Master Control</span>
                 </div>
             </div>
 
@@ -128,6 +130,59 @@
                         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                     </svg>
                 </button>
+
+                <!-- User Account Profile Button & Dropdown -->
+                <div class="user-account-menu-wrap">
+                    <button id="userAccountBtn" class="user-account-btn" title="Account & Workspace">
+                        <div class="google-acc-avatar-letter header-avatar-letter" style="width:26px; height:26px; font-size:12px; background:#3b82f6;">U</div>
+                        <img id="userAvatarImg" class="user-avatar" src="AQSoundboard_Logo.png" alt="Avatar" style="display:none;">
+                        <div class="user-meta">
+                            <span class="user-display-name" id="userDisplayName">User</span>
+                            <span class="user-role-badge user" id="userRoleBadge">👤 User</span>
+                        </div>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="11" height="11">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </button>
+                    
+                    <!-- Account Dropdown Menu -->
+                    <div id="accountDropdownMenu" class="account-dropdown-menu hidden">
+                        <div class="account-menu-header">
+                            <div id="menuAvatarLetterCircle" class="google-acc-avatar-letter" style="background:#3b82f6;">U</div>
+                            <img id="menuAvatarImg" class="menu-avatar" src="AQSoundboard_Logo.png" alt="Avatar" style="display:none;">
+                            <div class="menu-user-info">
+                                <strong id="menuUserName">User</strong>
+                                <span id="menuUserEmail" class="menu-email">user@aqsound.local</span>
+                                <span id="menuRoleTag" class="role-tag user">👤 Personal Account</span>
+                            </div>
+                        </div>
+                        <div class="account-menu-divider"></div>
+                        <button type="button" class="account-menu-action" id="openEditProfileBtn" style="font-weight:600;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            <span>Edit Profile / Account</span>
+                        </button>
+                        <button type="button" class="account-menu-action" id="openAuthModalBtn" style="font-weight:600;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                                <polyline points="10 17 15 12 10 7"></polyline>
+                                <line x1="15" y1="12" x2="3" y2="12"></line>
+                            </svg>
+                            <span>Sign In / Switch Account</span>
+                        </button>
+                        <div class="account-menu-divider"></div>
+                        <button type="button" class="account-menu-action danger" id="signOutBtn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                <polyline points="16 17 21 12 16 7"></polyline>
+                                <line x1="21" y1="12" x2="9" y2="12"></line>
+                            </svg>
+                            <span>Sign Out</span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </header>
@@ -137,7 +192,7 @@
         <div class="home-folders-header">
             <div class="folders-header-left">
                 <h2>📁 Soundboard Folders</h2>
-                <p>Select a soundboard folder (e.g. <strong>GRIZAL</strong>) to enter its categories and sounds, or create a new folder for a specific soundboard.</p>
+                <p>Select a soundboard folder (e.g. <strong>My Soundboard</strong>) to enter its categories and sounds, or create a new folder for a specific soundboard.</p>
             </div>
             <div class="folders-header-right">
                 <button id="createFolderBtn" class="primary-btn">
@@ -151,7 +206,7 @@
         </div>
 
         <div id="foldersGrid" class="folders-grid">
-            <!-- Rendered dynamically by app.js: GRIZAL folder, etc. -->
+            <!-- Rendered dynamically by app.js: folders list -->
         </div>
     </section>
 
@@ -167,9 +222,9 @@
                 <span>← All Soundboards</span>
             </button>
             <div class="current-folder-title">
-                <span class="folder-icon" id="breadcrumbFolderIcon">🎭</span>
-                <span id="breadcrumbFolderName">GRIZAL</span>
-                <span class="folder-chip-count" id="breadcrumbFolderCount">48 sounds • 16 categories</span>
+                <span class="folder-icon" id="breadcrumbFolderIcon">🎵</span>
+                <span id="breadcrumbFolderName">My Soundboard</span>
+                <span class="folder-chip-count" id="breadcrumbFolderCount">0 sounds • 0 categories</span>
             </div>
         </div>
 
@@ -349,11 +404,11 @@
                     <div class="form-group flex-1">
                         <label for="newSoundColor">Card Accent Color</label>
                         <div class="color-picker-row">
-                            <label class="color-dot"><input type="radio" name="accentColor" value="#f59e0b" checked><span style="background:#f59e0b;"></span></label>
-                            <label class="color-dot"><input type="radio" name="accentColor" value="#ef4444"><span style="background:#ef4444;"></span></label>
-                            <label class="color-dot"><input type="radio" name="accentColor" value="#10b981"><span style="background:#10b981;"></span></label>
+                            <label class="color-dot"><input type="radio" name="accentColor" value="#3b82f6" checked><span style="background:#3b82f6;"></span></label>
+                            <label class="color-dot"><input type="radio" name="accentColor" value="#2563eb"><span style="background:#2563eb;"></span></label>
                             <label class="color-dot"><input type="radio" name="accentColor" value="#06b6d4"><span style="background:#06b6d4;"></span></label>
-                            <label class="color-dot"><input type="radio" name="accentColor" value="#3b82f6"><span style="background:#3b82f6;"></span></label>
+                            <label class="color-dot"><input type="radio" name="accentColor" value="#10b981"><span style="background:#10b981;"></span></label>
+                            <label class="color-dot"><input type="radio" name="accentColor" value="#ef4444"><span style="background:#ef4444;"></span></label>
                             <label class="color-dot"><input type="radio" name="accentColor" value="#8b5cf6"><span style="background:#8b5cf6;"></span></label>
                             <label class="color-dot"><input type="radio" name="accentColor" value="#ec4899"><span style="background:#ec4899;"></span></label>
                         </div>
@@ -421,11 +476,11 @@
                     <div class="form-group flex-1">
                         <label>Accent Color</label>
                         <div class="color-picker-row" id="editColorPickerRow">
-                            <label class="color-dot"><input type="radio" name="editAccentColor" value="#f59e0b"><span style="background:#f59e0b;"></span></label>
-                            <label class="color-dot"><input type="radio" name="editAccentColor" value="#ef4444"><span style="background:#ef4444;"></span></label>
-                            <label class="color-dot"><input type="radio" name="editAccentColor" value="#10b981"><span style="background:#10b981;"></span></label>
-                            <label class="color-dot"><input type="radio" name="editAccentColor" value="#06b6d4"><span style="background:#06b6d4;"></span></label>
                             <label class="color-dot"><input type="radio" name="editAccentColor" value="#3b82f6"><span style="background:#3b82f6;"></span></label>
+                            <label class="color-dot"><input type="radio" name="editAccentColor" value="#2563eb"><span style="background:#2563eb;"></span></label>
+                            <label class="color-dot"><input type="radio" name="editAccentColor" value="#06b6d4"><span style="background:#06b6d4;"></span></label>
+                            <label class="color-dot"><input type="radio" name="editAccentColor" value="#10b981"><span style="background:#10b981;"></span></label>
+                            <label class="color-dot"><input type="radio" name="editAccentColor" value="#ef4444"><span style="background:#ef4444;"></span></label>
                             <label class="color-dot"><input type="radio" name="editAccentColor" value="#8b5cf6"><span style="background:#8b5cf6;"></span></label>
                             <label class="color-dot"><input type="radio" name="editAccentColor" value="#ec4899"><span style="background:#ec4899;"></span></label>
                         </div>
@@ -587,17 +642,18 @@
                 <input type="hidden" id="folderOriginalId">
                 <div class="form-group">
                     <label for="folderNameInput">Soundboard Name</label>
-                    <input type="text" id="folderNameInput" placeholder="e.g. GRIZAL, Gaming SFX, or D&D Campaign" required autocomplete="off">
+                    <input type="text" id="folderNameInput" placeholder="e.g. My Soundboard, Gaming SFX, or Stage Play" required autocomplete="off">
                 </div>
                 <div class="form-group">
                     <label for="folderDescInput">Description (Optional)</label>
-                    <input type="text" id="folderDescInput" placeholder="e.g. Specific soundboard for play acts, characters & SFX" autocomplete="off">
+                    <input type="text" id="folderDescInput" placeholder="e.g. Soundboard collection for events, characters & SFX" autocomplete="off">
                 </div>
                 <div class="form-group">
                     <label>Folder Icon</label>
                     <div class="emoji-picker-row" id="folderEmojiPickerRow">
-                        <label class="emoji-chip-radio"><input type="radio" name="folderIcon" value="🎭" checked><span>🎭</span></label>
-                        <label class="emoji-chip-radio"><input type="radio" name="folderIcon" value="📁"><span>📁</span></label>
+                        <label class="emoji-chip-radio"><input type="radio" name="folderIcon" value="📁" checked><span>📁</span></label>
+                        <label class="emoji-chip-radio"><input type="radio" name="folderIcon" value="🎵"><span>🎵</span></label>
+                        <label class="emoji-chip-radio"><input type="radio" name="folderIcon" value="🎭"><span>🎭</span></label>
                         <label class="emoji-chip-radio"><input type="radio" name="folderIcon" value="🎮"><span>🎮</span></label>
                         <label class="emoji-chip-radio"><input type="radio" name="folderIcon" value="🎙️"><span>🎙️</span></label>
                         <label class="emoji-chip-radio"><input type="radio" name="folderIcon" value="⚔️"><span>⚔️</span></label>
@@ -610,11 +666,11 @@
                 <div class="form-group">
                     <label>Folder Color Accent</label>
                     <div class="color-picker-row" id="folderColorPickerRow">
-                        <label class="color-dot"><input type="radio" name="folderColor" value="#f59e0b" checked><span style="background:#f59e0b;"></span></label>
-                        <label class="color-dot"><input type="radio" name="folderColor" value="#ef4444"><span style="background:#ef4444;"></span></label>
-                        <label class="color-dot"><input type="radio" name="folderColor" value="#10b981"><span style="background:#10b981;"></span></label>
+                        <label class="color-dot"><input type="radio" name="folderColor" value="#3b82f6" checked><span style="background:#3b82f6;"></span></label>
+                        <label class="color-dot"><input type="radio" name="folderColor" value="#2563eb"><span style="background:#2563eb;"></span></label>
                         <label class="color-dot"><input type="radio" name="folderColor" value="#06b6d4"><span style="background:#06b6d4;"></span></label>
-                        <label class="color-dot"><input type="radio" name="folderColor" value="#3b82f6"><span style="background:#3b82f6;"></span></label>
+                        <label class="color-dot"><input type="radio" name="folderColor" value="#10b981"><span style="background:#10b981;"></span></label>
+                        <label class="color-dot"><input type="radio" name="folderColor" value="#ef4444"><span style="background:#ef4444;"></span></label>
                         <label class="color-dot"><input type="radio" name="folderColor" value="#8b5cf6"><span style="background:#8b5cf6;"></span></label>
                         <label class="color-dot"><input type="radio" name="folderColor" value="#ec4899"><span style="background:#ec4899;"></span></label>
                     </div>
@@ -654,8 +710,8 @@
             </div>
             <form id="categoryForm" class="modal-body">
                 <div class="form-group">
-                    <label for="categoryNameInput">Category / Chapter Name</label>
-                    <input type="text" id="categoryNameInput" placeholder="e.g. Kabanata 16 or Battle SFX" required autocomplete="off">
+                    <label for="categoryNameInput">Category Name</label>
+                    <input type="text" id="categoryNameInput" placeholder="e.g. Background Music, Battle SFX, or Voice" required autocomplete="off">
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="secondary-btn" id="cancelCategoryBtn">Cancel</button>
@@ -676,7 +732,7 @@
                 <input type="hidden" id="renameCategoryOldName">
                 <div class="form-group">
                     <label for="renameCategoryNewName">New Category Name</label>
-                    <input type="text" id="renameCategoryNewName" placeholder="e.g. Act 1: The Banquet" required autocomplete="off">
+                    <input type="text" id="renameCategoryNewName" placeholder="e.g. Battle SFX or Soundtrack" required autocomplete="off">
                     <span class="file-hint" style="margin-top:6px; display:block;">All sounds currently assigned to this category will automatically update.</span>
                 </div>
                 <div class="modal-footer">
@@ -715,6 +771,191 @@
                 <div class="modal-footer space-between" style="margin-top: 16px;">
                     <button type="button" class="secondary-btn" id="cancelDeleteCategoryBtn">Cancel</button>
                     <button type="submit" class="danger-btn">Delete Category</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- USER AUTHENTICATION MODAL -->
+    <div id="authModal" class="modal-backdrop hidden">
+        <div class="modal-card auth-modal-card">
+            <div class="modal-header">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <img src="AQSoundboard_Logo.png" alt="AQSound" style="width:22px; height:22px; border-radius:4px;">
+                    <h2>AQSound Account</h2>
+                </div>
+                <button class="modal-close" id="closeAuthModalBtn">✕</button>
+            </div>
+            <div class="modal-body">
+                <!-- Google Sign In Button -->
+                <button type="button" class="google-signin-btn" id="authGoogleBtn">
+                    <svg viewBox="0 0 24 24" width="18" height="18">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                    </svg>
+                    <span>Sign in with Google</span>
+                </button>
+
+                <div class="auth-divider">
+                    <span>OR CONTINUE WITH ACCOUNT</span>
+                </div>
+
+                <!-- Tabs: Sign In / Create Account -->
+                <div class="auth-tabs">
+                    <button type="button" class="auth-tab-btn active" id="authTabSignIn">Sign In</button>
+                    <button type="button" class="auth-tab-btn" id="authTabSignUp">Create Account</button>
+                </div>
+
+                <!-- Sign In Form -->
+                <form id="authSignInForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="authSignInUsername">Username or Email</label>
+                        <input type="text" id="authSignInUsername" placeholder="e.g. user or user@example.com" required autocomplete="username">
+                    </div>
+                    <div class="form-group">
+                        <label for="authSignInPassword">Password</label>
+                        <input type="password" id="authSignInPassword" placeholder="Enter your password" required autocomplete="current-password">
+                        <button type="button" class="forgot-password-link" id="openForgotPasswordBtn">Forgot password?</button>
+                    </div>
+                    <button type="submit" class="primary-btn full-width" style="margin-top:6px;">Sign In</button>
+                </form>
+
+                <!-- Create Account Form (Hidden by default) -->
+                <form id="authSignUpForm" class="auth-form hidden">
+                    <div class="form-group">
+                        <label for="authSignUpName">Display Name</label>
+                        <input type="text" id="authSignUpName" placeholder="e.g. User" required autocomplete="name">
+                    </div>
+                    <div class="form-group">
+                        <label for="authSignUpUsername">Username</label>
+                        <input type="text" id="authSignUpUsername" placeholder="e.g. user123" required autocomplete="username">
+                    </div>
+                    <div class="form-group">
+                        <label for="authSignUpPassword">Password</label>
+                        <input type="password" id="authSignUpPassword" placeholder="Create a password" required autocomplete="new-password">
+                    </div>
+                    <button type="submit" class="primary-btn full-width" style="margin-top:6px;">Create Account</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- GOOGLE ACCOUNT SIGN IN MODAL -->
+    <div id="googleAuthModal" class="modal-backdrop hidden">
+        <div class="modal-card google-modal-card">
+            <div class="google-modal-header">
+                <button class="modal-close" id="closeGoogleAuthModalBtn" style="position:absolute; right:16px; top:16px;">✕</button>
+                <svg viewBox="0 0 24 24" width="28" height="28" style="margin-bottom:6px;">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                </svg>
+                <h3>Sign in with Google</h3>
+                <p>Enter your Google account details to sign in</p>
+            </div>
+            <div style="padding: 20px;">
+                <form id="googleAuthForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="googleCustomName">Full Name</label>
+                        <input type="text" id="googleCustomName" placeholder="Your Full Name (e.g. User)" required autocomplete="name">
+                    </div>
+                    <div class="google-input-row" style="margin-bottom:4px;">
+                        <div class="form-group" style="flex:1;">
+                            <label for="googleCustomEmail">Google Email</label>
+                            <input type="email" id="googleCustomEmail" placeholder="user@gmail.com" required autocomplete="email">
+                        </div>
+                    </div>
+                    <button type="submit" class="primary-btn full-width" style="margin-top:6px;" id="googleCustomSubmitBtn">Continue with Google</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- EDIT ACCOUNT PROFILE MODAL -->
+    <div id="editProfileModal" class="modal-backdrop hidden">
+        <div class="modal-card auth-modal-card">
+            <div class="modal-header">
+                <h2>Edit Account Profile</h2>
+                <button class="modal-close" id="closeEditProfileModalBtn">✕</button>
+            </div>
+            <form id="editProfileForm" class="modal-body auth-form">
+                <div class="edit-profile-avatar-row">
+                    <div id="editProfileAvatarPreview" class="edit-avatar-preview">U</div>
+                    <div style="flex:1;">
+                        <strong id="editProfileHeaderName" style="font-size:14px; display:block;">User</strong>
+                        <span id="editProfileHeaderRole" class="role-tag user" style="font-size:10px;">👤 Personal Account</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="profileDisplayNameInput">Display Name</label>
+                    <input type="text" id="profileDisplayNameInput" placeholder="e.g. User" required autocomplete="name">
+                </div>
+
+                <div class="form-group">
+                    <label for="profileUsernameInput">Username</label>
+                    <input type="text" id="profileUsernameInput" placeholder="e.g. user123" required autocomplete="username">
+                </div>
+
+                <div class="form-group">
+                    <label for="profileEmailInput">Email Address</label>
+                    <input type="email" id="profileEmailInput" placeholder="user@aqsound.local" autocomplete="email">
+                </div>
+
+                <div class="account-menu-divider" style="margin: 4px 0;"></div>
+                <span style="font-size: 11px; font-weight: 700; color: var(--text-secondary); display:block;">CHANGE PASSWORD (OPTIONAL)</span>
+
+                <div class="form-group">
+                    <label for="profileCurrentPasswordInput">Current Password</label>
+                    <input type="password" id="profileCurrentPasswordInput" placeholder="Enter current password if set" autocomplete="current-password">
+                </div>
+
+                <div class="form-group">
+                    <label for="profileNewPasswordInput">New Password</label>
+                    <input type="password" id="profileNewPasswordInput" placeholder="Leave blank to keep unchanged" autocomplete="new-password">
+                </div>
+
+                <div class="modal-footer space-between" style="margin-top: 10px;">
+                    <button type="button" class="secondary-btn" id="cancelEditProfileBtn">Cancel</button>
+                    <button type="submit" class="primary-btn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- FORGOT / RESET PASSWORD MODAL -->
+    <div id="forgotPasswordModal" class="modal-backdrop hidden">
+        <div class="modal-card auth-modal-card">
+            <div class="modal-header">
+                <h2>Reset Password</h2>
+                <button class="modal-close" id="closeForgotPasswordModalBtn">✕</button>
+            </div>
+            <form id="forgotPasswordForm" class="modal-body auth-form">
+                <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">
+                    Enter your account username or registered email address and choose a new password.
+                </p>
+
+                <div class="form-group">
+                    <label for="forgotUsernameInput">Username or Email</label>
+                    <input type="text" id="forgotUsernameInput" placeholder="e.g. user or user@example.com" required autocomplete="username">
+                </div>
+
+                <div class="form-group">
+                    <label for="forgotNewPasswordInput">New Password</label>
+                    <input type="password" id="forgotNewPasswordInput" placeholder="Enter your new password" required autocomplete="new-password">
+                </div>
+
+                <div class="form-group">
+                    <label for="forgotConfirmPasswordInput">Confirm New Password</label>
+                    <input type="password" id="forgotConfirmPasswordInput" placeholder="Confirm your new password" required autocomplete="new-password">
+                </div>
+
+                <div class="modal-footer space-between" style="margin-top: 10px;">
+                    <button type="button" class="secondary-btn" id="cancelForgotPasswordBtn">Back to Sign In</button>
+                    <button type="submit" class="primary-btn">Reset Password</button>
                 </div>
             </form>
         </div>

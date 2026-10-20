@@ -1,4 +1,4 @@
-﻿// Default sounds loaded from GRizal Audio
+// Default sounds loaded from GRizal Audio
 window.DEFAULT_SOUNDS = [
     {
         "id":  "sound_1",
@@ -39,7 +39,7 @@ window.DEFAULT_SOUNDS = [
         "volume":  1,
         "playbackRate":  1,
         "keybind":  "q",
-        "color":  "#f59e0b",
+        "color":  "#3b82f6",
         "favorite":  false
     },
     {
@@ -53,7 +53,7 @@ window.DEFAULT_SOUNDS = [
         "volume":  1,
         "playbackRate":  1,
         "keybind":  "w",
-        "color":  "#f59e0b",
+        "color":  "#3b82f6",
         "favorite":  false
     },
     {
@@ -67,7 +67,7 @@ window.DEFAULT_SOUNDS = [
         "volume":  1,
         "playbackRate":  1,
         "keybind":  "3",
-        "color":  "#f59e0b",
+        "color":  "#3b82f6",
         "favorite":  false
     },
     {
@@ -81,7 +81,7 @@ window.DEFAULT_SOUNDS = [
         "volume":  1,
         "playbackRate":  1,
         "keybind":  "",
-        "color":  "#f59e0b",
+        "color":  "#3b82f6",
         "favorite":  false
     },
     {
@@ -95,7 +95,7 @@ window.DEFAULT_SOUNDS = [
         "volume":  1,
         "playbackRate":  1,
         "keybind":  "4",
-        "color":  "#f59e0b",
+        "color":  "#3b82f6",
         "favorite":  false
     },
     {
@@ -109,7 +109,7 @@ window.DEFAULT_SOUNDS = [
         "volume":  1,
         "playbackRate":  1,
         "keybind":  "5",
-        "color":  "#f59e0b",
+        "color":  "#3b82f6",
         "favorite":  false
     },
     {
@@ -123,7 +123,7 @@ window.DEFAULT_SOUNDS = [
         "volume":  1,
         "playbackRate":  1,
         "keybind":  "",
-        "color":  "#f59e0b",
+        "color":  "#3b82f6",
         "favorite":  false
     },
     {
@@ -137,7 +137,7 @@ window.DEFAULT_SOUNDS = [
         "volume":  1,
         "playbackRate":  1,
         "keybind":  "",
-        "color":  "#f59e0b",
+        "color":  "#3b82f6",
         "favorite":  false
     },
     {
