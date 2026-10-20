@@ -619,6 +619,104 @@
         showToast(`Password successfully reset! Signed in as ${found.displayName}.`, 'success');
     }
 
+    // ================= GOOGLE OAUTH 2.0 =================
+    const GOOGLE_CLIENT_ID = '949454012063-3lsq8s6if57oj5te2995tkc9d8o3nffk.apps.googleusercontent.com';
+
+    function parseJwt(token) {
+        try {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        } catch (e) {
+            console.error('Failed to parse Google JWT credential', e);
+            return null;
+        }
+    }
+
+    function handleGoogleCredentialResponse(response) {
+        if (!response || !response.credential) {
+            showToast('Google sign-in was not completed.', 'error');
+            return;
+        }
+
+        const payload = parseJwt(response.credential);
+        if (!payload || !payload.email) {
+            showToast('Unable to read Google account information.', 'error');
+            return;
+        }
+
+        const users = getUsers();
+        let user = users.find(u => 
+            (u.email && u.email.toLowerCase() === payload.email.toLowerCase()) || 
+            u.id === 'google_' + payload.sub
+        );
+
+        if (!user) {
+            const username = payload.email.split('@')[0];
+            const isOwner = (payload.email.toLowerCase() === 'aqu4gmr@gmail.com');
+            user = {
+                id: 'google_' + payload.sub,
+                username: username,
+                displayName: payload.name || username,
+                email: payload.email,
+                avatar: payload.picture || '',
+                role: isOwner ? 'owner' : 'user',
+                password: '',
+                avatarLetter: (payload.name || username)[0].toUpperCase(),
+                avatarBg: '#3b82f6'
+            };
+            users.push(user);
+        } else {
+            if (payload.picture) user.avatar = payload.picture;
+            if (payload.name) user.displayName = payload.name;
+        }
+
+        saveUsers(users);
+        switchAccount(user.id);
+        showToast(`Signed in with Google as ${user.displayName}!`, 'success');
+    }
+
+    function initGoogleOAuth() {
+        if (!window.google || !window.google.accounts || !window.google.accounts.id) {
+            // Retry shortly if the async Google Identity script is still loading
+            setTimeout(initGoogleOAuth, 300);
+            return;
+        }
+
+        try {
+            window.google.accounts.id.initialize({
+                client_id: GOOGLE_CLIENT_ID,
+                callback: handleGoogleCredentialResponse,
+                auto_select: false,
+                cancel_on_tap_outside: true
+            });
+
+            const googleBtnContainer = document.getElementById('googleOfficialBtn');
+            if (googleBtnContainer) {
+                window.google.accounts.id.renderButton(
+                    googleBtnContainer,
+                    {
+                        theme: 'outline',
+                        size: 'large',
+                        type: 'standard',
+                        shape: 'rectangular',
+                        text: 'signin_with',
+                        logo_alignment: 'left',
+                        width: 330
+                    }
+                );
+                if (authGoogleBtn) {
+                    authGoogleBtn.style.display = 'none';
+                }
+            }
+        } catch (err) {
+            console.warn('Google Identity Services notice:', err);
+        }
+    }
+
     // ================= INITIALIZATION =================
     async function init() {
         getCurrentUser();
@@ -626,6 +724,7 @@
         loadSettings();
         await loadSoundboards();
         setupEventListeners();
+        initGoogleOAuth();
         switchMainView(currentMainView);
         updateSettingsUI();
     }
@@ -2363,6 +2462,7 @@
             openAuthModalBtn.addEventListener('click', () => {
                 if (accountDropdownMenu) accountDropdownMenu.classList.add('hidden');
                 if (authModal) authModal.classList.remove('hidden');
+                initGoogleOAuth();
             });
         }
 
@@ -2503,10 +2603,19 @@
         }
 
         // Google Sign In Button
-        if (authGoogleBtn && googleAuthModal) {
+        if (authGoogleBtn) {
             authGoogleBtn.addEventListener('click', () => {
-                if (authModal) authModal.classList.add('hidden');
-                googleAuthModal.classList.remove('hidden');
+                if (window.google && window.google.accounts && window.google.accounts.id) {
+                    window.google.accounts.id.prompt((notification) => {
+                        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                            if (authModal) authModal.classList.add('hidden');
+                            if (googleAuthModal) googleAuthModal.classList.remove('hidden');
+                        }
+                    });
+                } else if (googleAuthModal) {
+                    if (authModal) authModal.classList.add('hidden');
+                    googleAuthModal.classList.remove('hidden');
+                }
             });
         }
         if (closeGoogleAuthModalBtn && googleAuthModal) {
