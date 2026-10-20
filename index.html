@@ -202,7 +202,7 @@
                         <line x1="12" y1="5" x2="12" y2="19"></line>
                         <line x1="5" y1="12" x2="19" y2="12"></line>
                     </svg>
-                    <span>+ New Soundboard Folder</span>
+                    <span>New Soundboard Folder</span>
                 </button>
             </div>
         </div>
@@ -300,58 +300,24 @@
         </div>
     </section>
 
-    <!-- Sticky Now Playing Dock -->
+    <!-- Sticky Now Playing Dock (Multi-Track Audio Player) -->
     <footer id="nowPlayingDock" class="now-playing-dock hidden">
-        <div class="dock-container">
-            <div class="dock-left">
-                <div class="now-playing-indicator">
-                    <span class="bar bar1"></span>
-                    <span class="bar bar2"></span>
-                    <span class="bar bar3"></span>
-                    <span class="bar bar4"></span>
-                </div>
-                <div class="dock-info">
-                    <div class="dock-title" id="dockTrackTitle">Playing Audio</div>
-                    <div class="dock-subtitle" id="dockTrackSub">Chapter / SFX</div>
-                </div>
+        <div class="dock-rack-header hidden" id="dockRackHeader">
+            <div class="dock-rack-left">
+                <span class="dock-rack-tag">NOW PLAYING</span>
+                <span class="dock-rack-count" id="dockRackCount">1 active sound</span>
             </div>
-
-            <div class="dock-center">
-                <div class="dock-timeline">
-                    <span class="dock-time" id="dockCurrentTime">0:00</span>
-                    <input type="range" id="dockProgressBar" class="dock-progress" min="0" max="100" value="0">
-                    <span class="dock-time" id="dockDuration">0:00</span>
-                </div>
-            </div>
-
-            <div class="dock-right">
-                <button id="dockLoopBtn" class="dock-btn" title="Toggle Loop for this track">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="17 1 21 5 17 9"></polyline>
-                        <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
-                        <polyline points="7 23 3 19 7 15"></polyline>
-                        <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
-                    </svg>
-                </button>
-                <div class="dock-volume">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                    </svg>
-                    <input type="range" id="dockVolumeSlider" min="0" max="100" value="100" title="Track Volume">
-                </div>
-                <button id="dockPauseBtn" class="dock-play-btn" title="Pause / Resume">
-                    <svg id="dockPauseIcon" viewBox="0 0 24 24" fill="currentColor">
-                        <rect x="6" y="4" width="4" height="16"></rect>
-                        <rect x="14" y="4" width="4" height="16"></rect>
-                    </svg>
-                </button>
-                <button id="dockStopBtn" class="dock-stop-btn" title="Stop This Track">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
+            <div class="dock-rack-right">
+                <button type="button" id="dockStopAllBtn" class="dock-rack-stop-all" title="Stop all playing tracks">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12">
                         <rect x="6" y="6" width="12" height="12"></rect>
                     </svg>
+                    <span>Stop All</span>
                 </button>
             </div>
+        </div>
+        <div id="nowPlayingTracksList" class="dock-tracks-list">
+            <!-- Dynamically populated with active track rows by updateNowPlayingDock() -->
         </div>
     </footer>
 

@@ -140,18 +140,12 @@
     const viewGridDensityBtn = document.getElementById('viewGridDensityBtn');
     const densityText = document.getElementById('densityText');
 
-    // Now Playing Dock
+    // Now Playing Dock (Multi-Track Audio Player)
     const nowPlayingDock = document.getElementById('nowPlayingDock');
-    const dockTrackTitle = document.getElementById('dockTrackTitle');
-    const dockTrackSub = document.getElementById('dockTrackSub');
-    const dockProgressBar = document.getElementById('dockProgressBar');
-    const dockCurrentTime = document.getElementById('dockCurrentTime');
-    const dockDuration = document.getElementById('dockDuration');
-    const dockLoopBtn = document.getElementById('dockLoopBtn');
-    const dockVolumeSlider = document.getElementById('dockVolumeSlider');
-    const dockPauseBtn = document.getElementById('dockPauseBtn');
-    const dockPauseIcon = document.getElementById('dockPauseIcon');
-    const dockStopBtn = document.getElementById('dockStopBtn');
+    const dockRackHeader = document.getElementById('dockRackHeader');
+    const dockRackCount = document.getElementById('dockRackCount');
+    const dockStopAllBtn = document.getElementById('dockStopAllBtn');
+    const nowPlayingTracksList = document.getElementById('nowPlayingTracksList');
 
     // Modals
     const addSoundModal = document.getElementById('addSoundModal');
@@ -1131,11 +1125,19 @@
             if (bar) bar.style.width = `${percent}%`;
         }
 
-        // Update Dock if this is primary track
-        if (primaryNowPlayingSoundId === soundId) {
-            dockProgressBar.value = percent;
-            dockCurrentTime.textContent = formatTime(currentTime);
-            dockDuration.textContent = formatTime(duration);
+        // Update Multi-Track Player Dock
+        if (nowPlayingTracksList) {
+            const row = nowPlayingTracksList.querySelector(`.dock-track-row[data-id="${soundId}"]`);
+            if (row) {
+                const prog = row.querySelector('.dock-track-progress');
+                if (prog && document.activeElement !== prog) {
+                    prog.value = percent;
+                }
+                const cur = row.querySelector('.dock-track-cur-time');
+                if (cur) cur.textContent = formatTime(currentTime);
+                const dur = row.querySelector('.dock-track-dur-time');
+                if (dur) dur.textContent = formatTime(duration);
+            }
         }
     }
 
@@ -1225,30 +1227,108 @@
         return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
     }
 
-    // ================= NOW PLAYING DOCK =================
+    // ================= NOW PLAYING DOCK (MULTI-TRACK PLAYER) =================
     function updateNowPlayingDock() {
-        if (!primaryNowPlayingSoundId || !activeAudios.has(primaryNowPlayingSoundId)) {
+        if (!nowPlayingDock) return;
+
+        const count = activeAudios.size;
+        if (count === 0) {
             nowPlayingDock.classList.add('hidden');
             document.body.classList.remove('has-dock');
+            document.documentElement.style.setProperty('--dock-height', '0px');
             return;
         }
 
-        const active = activeAudios.get(primaryNowPlayingSoundId);
-        const sound = active.sound;
-
         nowPlayingDock.classList.remove('hidden');
         document.body.classList.add('has-dock');
-        dockTrackTitle.textContent = sound.title;
-        dockTrackSub.textContent = `${sound.category} ${sound.isBgm ? '• BGM' : '• SFX'}`;
-        
-        dockLoopBtn.classList.toggle('active', !!active.audio.loop);
-        dockVolumeSlider.value = Math.round((sound.volume !== undefined ? sound.volume : 1) * 100);
 
-        if (active.audio.paused) {
-            dockPauseIcon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"></polygon>';
-        } else {
-            dockPauseIcon.innerHTML = '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>';
+        // Multi-track header with Stop All
+        if (dockRackHeader) {
+            if (count > 1) {
+                dockRackHeader.classList.remove('hidden');
+                if (dockRackCount) {
+                    dockRackCount.textContent = `${count} active sounds`;
+                }
+            } else {
+                dockRackHeader.classList.add('hidden');
+            }
         }
+
+        // Build Multi-Track list rows
+        if (nowPlayingTracksList) {
+            let html = '';
+            activeAudios.forEach((active, soundId) => {
+                const sound = active.sound;
+                const duration = active.audio.duration || 0;
+                const currentTime = active.audio.currentTime || 0;
+                const percent = duration > 0 ? (currentTime / duration) * 100 : 0;
+                const volPercent = Math.round((sound.volume !== undefined ? sound.volume : 1) * 100);
+                const isPaused = !!active.audio.paused;
+                const isLoop = !!active.audio.loop;
+
+                html += `
+                <div class="dock-track-row ${isPaused ? 'is-paused' : ''}" data-id="${escapeHtml(soundId)}">
+                    <div class="dock-left">
+                        <div class="now-playing-indicator ${isPaused ? 'paused' : ''}">
+                            <span class="bar bar1"></span>
+                            <span class="bar bar2"></span>
+                            <span class="bar bar3"></span>
+                            <span class="bar bar4"></span>
+                        </div>
+                        <div class="dock-info">
+                            <div class="dock-title" title="${escapeHtml(sound.title)}">${escapeHtml(sound.title)}</div>
+                            <div class="dock-subtitle">${escapeHtml(sound.category || 'Sound')} ${sound.isBgm ? '• BGM' : '• SFX'}</div>
+                        </div>
+                    </div>
+
+                    <div class="dock-center">
+                        <div class="dock-timeline">
+                            <span class="dock-time dock-track-cur-time">${formatTime(currentTime)}</span>
+                            <input type="range" class="dock-progress dock-track-progress" min="0" max="100" value="${percent}" title="Scrub audio position">
+                            <span class="dock-time dock-track-dur-time">${formatTime(duration)}</span>
+                        </div>
+                    </div>
+
+                    <div class="dock-right">
+                        <button type="button" class="dock-btn dock-track-loop-btn ${isLoop ? 'active' : ''}" title="${isLoop ? 'Loop Enabled' : 'Loop Disabled'}" data-id="${escapeHtml(soundId)}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="17 1 21 5 17 9"></polyline>
+                                <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                                <polyline points="7 23 3 19 7 15"></polyline>
+                                <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+                            </svg>
+                        </button>
+                        <div class="dock-volume">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                            </svg>
+                            <input type="range" class="dock-track-vol-slider" min="0" max="100" value="${volPercent}" title="Track Volume: ${volPercent}%" data-id="${escapeHtml(soundId)}">
+                        </div>
+                        <button type="button" class="dock-play-btn dock-track-pause-btn" title="${isPaused ? 'Resume Track' : 'Pause Track'}" data-id="${escapeHtml(soundId)}">
+                            ${isPaused ? 
+                                '<svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>' : 
+                                '<svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>'
+                            }
+                        </button>
+                        <button type="button" class="dock-stop-btn dock-track-stop-btn" title="Stop Track" data-id="${escapeHtml(soundId)}">
+                            <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                                <rect x="6" y="6" width="12" height="12"></rect>
+                            </svg>
+                        </button>
+                    </div>
+                </div>`;
+            });
+            nowPlayingTracksList.innerHTML = html;
+        }
+
+        // Measure and sync --dock-height
+        requestAnimationFrame(() => {
+            if (nowPlayingDock && !nowPlayingDock.classList.contains('hidden')) {
+                const rectHeight = nowPlayingDock.offsetHeight;
+                document.documentElement.style.setProperty('--dock-height', `${rectHeight}px`);
+            }
+        });
     }
 
     // ================= VIEWS & FOLDERS =================
@@ -2223,57 +2303,80 @@
             saveSettings();
         });
 
-        // Now Playing Dock Controls
-        dockProgressBar.addEventListener('input', (e) => {
-            if (primaryNowPlayingSoundId && activeAudios.has(primaryNowPlayingSoundId)) {
-                const active = activeAudios.get(primaryNowPlayingSoundId);
-                const percent = parseFloat(e.target.value);
-                if (active.audio.duration) {
-                    active.audio.currentTime = (percent / 100) * active.audio.duration;
+        // Multi-Track Now Playing Dock Controls
+        if (dockStopAllBtn) {
+            dockStopAllBtn.addEventListener('click', stopAllSounds);
+        }
+
+        if (nowPlayingTracksList) {
+            // Scrub slider & Volume slider delegation
+            nowPlayingTracksList.addEventListener('input', (e) => {
+                if (e.target.classList.contains('dock-track-progress')) {
+                    const row = e.target.closest('.dock-track-row');
+                    const soundId = row ? row.dataset.id : null;
+                    if (soundId && activeAudios.has(soundId)) {
+                        const active = activeAudios.get(soundId);
+                        const percent = parseFloat(e.target.value);
+                        if (active.audio.duration) {
+                            active.audio.currentTime = (percent / 100) * active.audio.duration;
+                        }
+                    }
+                } else if (e.target.classList.contains('dock-track-vol-slider')) {
+                    const row = e.target.closest('.dock-track-row');
+                    const soundId = row ? row.dataset.id : null;
+                    if (soundId && activeAudios.has(soundId)) {
+                        const active = activeAudios.get(soundId);
+                        const vol = parseInt(e.target.value, 10) / 100;
+                        active.sound.volume = vol;
+                        active.audio.volume = calculateVolume(vol);
+                        saveSounds();
+                    }
                 }
-            }
-        });
+            });
 
-        dockLoopBtn.addEventListener('click', () => {
-            if (primaryNowPlayingSoundId && activeAudios.has(primaryNowPlayingSoundId)) {
-                const active = activeAudios.get(primaryNowPlayingSoundId);
-                active.audio.loop = !active.audio.loop;
-                active.sound.loop = active.audio.loop;
-                dockLoopBtn.classList.toggle('active', active.audio.loop);
-                saveSounds();
-                renderSounds();
-            }
-        });
-
-        dockVolumeSlider.addEventListener('input', (e) => {
-            if (primaryNowPlayingSoundId && activeAudios.has(primaryNowPlayingSoundId)) {
-                const active = activeAudios.get(primaryNowPlayingSoundId);
-                const vol = parseInt(e.target.value, 10) / 100;
-                active.sound.volume = vol;
-                active.audio.volume = calculateVolume(vol);
-                saveSounds();
-            }
-        });
-
-        dockPauseBtn.addEventListener('click', () => {
-            if (primaryNowPlayingSoundId && activeAudios.has(primaryNowPlayingSoundId)) {
-                const active = activeAudios.get(primaryNowPlayingSoundId);
-                if (active.audio.paused) {
-                    active.audio.play();
-                    updateCardPlayState(primaryNowPlayingSoundId, true);
-                } else {
-                    active.audio.pause();
-                    updateCardPlayState(primaryNowPlayingSoundId, false);
+            // Action buttons delegation (Loop, Pause/Resume, Stop)
+            nowPlayingTracksList.addEventListener('click', (e) => {
+                const loopBtn = e.target.closest('.dock-track-loop-btn');
+                if (loopBtn) {
+                    const soundId = loopBtn.dataset.id;
+                    if (soundId && activeAudios.has(soundId)) {
+                        const active = activeAudios.get(soundId);
+                        active.audio.loop = !active.audio.loop;
+                        active.sound.loop = active.audio.loop;
+                        loopBtn.classList.toggle('active', active.audio.loop);
+                        saveSounds();
+                        renderSounds();
+                    }
+                    return;
                 }
-                updateNowPlayingDock();
-            }
-        });
 
-        dockStopBtn.addEventListener('click', () => {
-            if (primaryNowPlayingSoundId) {
-                stopSound(primaryNowPlayingSoundId);
-            }
-        });
+                const pauseBtn = e.target.closest('.dock-track-pause-btn');
+                if (pauseBtn) {
+                    const soundId = pauseBtn.dataset.id;
+                    if (soundId && activeAudios.has(soundId)) {
+                        const active = activeAudios.get(soundId);
+                        if (active.audio.paused) {
+                            active.audio.play();
+                            updateCardPlayState(soundId, true);
+                        } else {
+                            active.audio.pause();
+                            updateCardPlayState(soundId, false);
+                        }
+                        updateNowPlayingDock();
+                    }
+                    return;
+                }
+
+                const stopBtn = e.target.closest('.dock-track-stop-btn');
+                if (stopBtn) {
+                    const soundId = stopBtn.dataset.id;
+                    if (soundId) {
+                        stopSound(soundId);
+                    }
+                    return;
+                }
+            });
+        }
 
         // Nav View Switcher (Home Folders vs Soundboard Stage)
         if (navHomeFoldersBtn) navHomeFoldersBtn.addEventListener('click', () => switchMainView('home'));
