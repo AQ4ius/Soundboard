@@ -166,6 +166,17 @@
     const newSoundLoop = document.getElementById('newSoundLoop');
     const newSoundIsBgm = document.getElementById('newSoundIsBgm');
 
+    // Add Sound Tabs & URL Import Elements
+    const addSoundTabFileBtn = document.getElementById('addSoundTabFileBtn');
+    const addSoundTabUrlBtn = document.getElementById('addSoundTabUrlBtn');
+    const addSoundFileGroup = document.getElementById('addSoundFileGroup');
+    const addSoundUrlGroup = document.getElementById('addSoundUrlGroup');
+    const newSoundUrlInput = document.getElementById('newSoundUrlInput');
+    const verifyUrlBtn = document.getElementById('verifyUrlBtn');
+    const urlValidationFeedback = document.getElementById('urlValidationFeedback');
+    let currentAddSoundMode = 'file'; // 'file' | 'url'
+    let verifiedAudioData = null; // { url, type, youtubeId, title, duration }
+
     const editSoundModal = document.getElementById('editSoundModal');
     const closeEditModalBtn = document.getElementById('closeEditModalBtn');
     const cancelEditBtn = document.getElementById('cancelEditBtn');
@@ -194,6 +205,17 @@
     const deleteCategoryMoveTarget = document.getElementById('deleteCategoryMoveTarget');
     const closeDeleteCategoryModalBtn = document.getElementById('closeDeleteCategoryModalBtn');
     const cancelDeleteCategoryBtn = document.getElementById('cancelDeleteCategoryBtn');
+
+    // Category Context Menu Elements
+    const categoryContextMenu = document.getElementById('categoryContextMenu');
+    const catMenuPinBtn = document.getElementById('catMenuPinBtn');
+    const catMenuPinIcon = document.getElementById('catMenuPinIcon');
+    const catMenuPinLabel = document.getElementById('catMenuPinLabel');
+    const catMenuRenameBtn = document.getElementById('catMenuRenameBtn');
+    const catMenuDeleteBtn = document.getElementById('catMenuDeleteBtn');
+    let currentContextMenuCategory = null;
+    let draggedCategoryName = null;
+
     const clearEditKeybindBtn = document.getElementById('clearEditKeybindBtn');
     const editSoundVolume = document.getElementById('editSoundVolume');
     const editVolumeDisplay = document.getElementById('editVolumeDisplay');
@@ -901,8 +923,255 @@
         }, 3500);
     }
 
+    // ================= YOUTUBE & WEB AUDIO ENGINE =================
+    let isYouTubeApiReady = !!(window.YT && window.YT.Player);
+    const ytApiReadyCallbacks = [];
+
+    const existingOnYouTubeReady = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = function() {
+        isYouTubeApiReady = true;
+        if (typeof existingOnYouTubeReady === 'function') {
+            try { existingOnYouTubeReady(); } catch (e) {}
+        }
+        while (ytApiReadyCallbacks.length > 0) {
+            const cb = ytApiReadyCallbacks.shift();
+            try { cb(); } catch (e) { console.error('YT callback error', e); }
+        }
+    };
+
+    function onYouTubeReady(cb) {
+        if (isYouTubeApiReady || (window.YT && window.YT.Player)) {
+            isYouTubeApiReady = true;
+            cb();
+        } else {
+            ytApiReadyCallbacks.push(cb);
+        }
+    }
+
+    function extractYouTubeId(url) {
+        if (!url || typeof url !== 'string') return null;
+        const cleanUrl = url.trim();
+        const regExp = /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/|live\/))([a-zA-Z0-9_-]{11})/;
+        const match = cleanUrl.match(regExp);
+        if (match && match[1]) return match[1];
+        try {
+            const parsed = new URL(cleanUrl);
+            if (parsed.searchParams && parsed.searchParams.has('v')) {
+                const v = parsed.searchParams.get('v');
+                if (v && v.length === 11) return v;
+            }
+        } catch (e) {}
+        return null;
+    }
+
+    class YouTubeAudioController {
+        constructor(soundId, videoId) {
+            this.soundId = soundId;
+            this.videoId = videoId;
+            this.dataset = { origSrc: videoId };
+            this._duration = 0;
+            this._currentTime = 0;
+            this._volume = 1.0;
+            this._playbackRate = 1.0;
+            this._loop = false;
+            this._isPaused = true;
+            this._isReady = false;
+            this._pendingPlay = false;
+            this._player = null;
+            this.onended = null;
+            this.onpause = null;
+            this.onplay = null;
+
+            this._mount();
+        }
+
+        _mount() {
+            onYouTubeReady(() => {
+                let container = document.getElementById('ytAudioPlayerContainer');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = 'ytAudioPlayerContainer';
+                    container.style.cssText = 'position:fixed;bottom:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;visibility:hidden;';
+                    document.body.appendChild(container);
+                }
+
+                const elementId = `yt_player_${this.soundId.replace(/[^a-zA-Z0-9_]/g, '_')}`;
+                let el = document.getElementById(elementId);
+                if (!el) {
+                    el = document.createElement('div');
+                    el.id = elementId;
+                    container.appendChild(el);
+                }
+
+                try {
+                    this._player = new window.YT.Player(elementId, {
+                        height: '100',
+                        width: '100',
+                        videoId: this.videoId,
+                        playerVars: {
+                            autoplay: 0,
+                            controls: 0,
+                            disablekb: 1,
+                            fs: 0,
+                            modestbranding: 1,
+                            playsinline: 1,
+                            rel: 0
+                        },
+                        events: {
+                            onReady: (event) => {
+                                this._isReady = true;
+                                this._duration = event.target.getDuration() || 0;
+                                event.target.setVolume(this._volume * 100);
+                                event.target.setPlaybackRate(this._playbackRate);
+                                if (this._pendingPlay) {
+                                    this._pendingPlay = false;
+                                    this.play();
+                                }
+                            },
+                            onStateChange: (event) => {
+                                if (event.data === window.YT.PlayerState.PLAYING) {
+                                    this._isPaused = false;
+                                    this._duration = this._player.getDuration() || this._duration;
+                                    if (typeof this.onplay === 'function') this.onplay();
+                                } else if (event.data === window.YT.PlayerState.PAUSED) {
+                                    this._isPaused = true;
+                                    if (typeof this.onpause === 'function') this.onpause();
+                                } else if (event.data === window.YT.PlayerState.ENDED) {
+                                    this._isPaused = true;
+                                    if (this._loop) {
+                                        this.currentTime = 0;
+                                        this.play();
+                                    } else {
+                                        if (typeof this.onended === 'function') this.onended();
+                                    }
+                                }
+                            },
+                            onError: (event) => {
+                                console.warn('YouTube audio error', this.videoId, event.data);
+                                showToast('YouTube audio stream cannot be embedded or played.', 'error');
+                                if (typeof this.onended === 'function') this.onended();
+                            }
+                        }
+                    });
+                } catch (e) {
+                    console.error('Failed to init YT.Player', e);
+                }
+            });
+        }
+
+        get paused() {
+            return this._isPaused;
+        }
+
+        get currentTime() {
+            if (this._player && this._isReady && typeof this._player.getCurrentTime === 'function') {
+                try {
+                    return this._player.getCurrentTime() || 0;
+                } catch (e) {
+                    return this._currentTime;
+                }
+            }
+            return this._currentTime;
+        }
+
+        set currentTime(val) {
+            this._currentTime = Math.max(0, Number(val) || 0);
+            if (this._player && this._isReady && typeof this._player.seekTo === 'function') {
+                try {
+                    this._player.seekTo(this._currentTime, true);
+                } catch (e) {
+                    console.warn(e);
+                }
+            }
+        }
+
+        get duration() {
+            if (this._player && this._isReady && typeof this._player.getDuration === 'function') {
+                try {
+                    const d = this._player.getDuration();
+                    if (d > 0) this._duration = d;
+                } catch (e) {}
+            }
+            return this._duration || 0;
+        }
+
+        get volume() {
+            return this._volume;
+        }
+
+        set volume(val) {
+            this._volume = Math.max(0, Math.min(1, Number(val) || 0));
+            if (this._player && this._isReady && typeof this._player.setVolume === 'function') {
+                try {
+                    this._player.setVolume(this._volume * 100);
+                } catch (e) {}
+            }
+        }
+
+        get loop() {
+            return this._loop;
+        }
+
+        set loop(val) {
+            this._loop = !!val;
+        }
+
+        get playbackRate() {
+            return this._playbackRate;
+        }
+
+        set playbackRate(val) {
+            this._playbackRate = Number(val) || 1.0;
+            if (this._player && this._isReady && typeof this._player.setPlaybackRate === 'function') {
+                try {
+                    this._player.setPlaybackRate(this._playbackRate);
+                } catch (e) {}
+            }
+        }
+
+        play() {
+            return new Promise((resolve, reject) => {
+                if (!this._isReady || !this._player || typeof this._player.playVideo !== 'function') {
+                    this._pendingPlay = true;
+                    resolve();
+                    return;
+                }
+                try {
+                    this._player.playVideo();
+                    this._isPaused = false;
+                    resolve();
+                } catch (err) {
+                    reject(err);
+                }
+            });
+        }
+
+        pause() {
+            this._pendingPlay = false;
+            if (this._player && this._isReady && typeof this._player.pauseVideo === 'function') {
+                try {
+                    this._player.pauseVideo();
+                } catch (e) {}
+            }
+            this._isPaused = true;
+        }
+
+        load() {
+            // no-op to satisfy duck-typing
+        }
+    }
+
     // ================= AUDIO ENGINE =================
     function getAudioElement(sound) {
+        if (sound.sourceType === 'youtube' || (sound.src && (sound.src.includes('youtube.com') || sound.src.includes('youtu.be')))) {
+            if (!audioPool.has(sound.id)) {
+                const ytId = sound.youtubeId || extractYouTubeId(sound.src);
+                const ytController = new YouTubeAudioController(sound.id, ytId);
+                audioPool.set(sound.id, ytController);
+            }
+            return audioPool.get(sound.id);
+        }
+
         const isVideo = sound.src && sound.src.toLowerCase().includes('.mp4');
 
         if (!audioPool.has(sound.id)) {
@@ -1749,6 +2018,13 @@
             activeCategory = newCat;
         }
 
+        if (sb.categoryOrder && Array.isArray(sb.categoryOrder)) {
+            const oIdx = sb.categoryOrder.indexOf(oldCat);
+            if (oIdx !== -1) {
+                sb.categoryOrder[oIdx] = newCat;
+            }
+        }
+
         saveSoundboards();
         renameCategoryModal.classList.add('hidden');
         renderCategories();
@@ -1818,6 +2094,10 @@
             sb.customCategories = sb.customCategories.filter(c => c !== catToDelete);
         }
 
+        if (sb.categoryOrder && Array.isArray(sb.categoryOrder)) {
+            sb.categoryOrder = sb.categoryOrder.filter(c => c !== catToDelete);
+        }
+
         if (sb.pinnedCategory === catToDelete) {
             const remaining = getCategories();
             sb.pinnedCategory = remaining.find(c => c.toLowerCase().includes('general')) || remaining[0] || 'General SFX';
@@ -1847,6 +2127,56 @@
         }
     };
 
+    // Context Menu & Reorder for Categories
+    function openCategoryContextMenu(cat, triggerBtn) {
+        if (!categoryContextMenu) return;
+        currentContextMenuCategory = cat;
+
+        const isPinned = getPinnedCategory() === cat;
+        if (catMenuPinLabel) {
+            catMenuPinLabel.textContent = isPinned ? 'Unpin from Bottom Tray' : 'Pin to Bottom Tray';
+        }
+
+        const rect = triggerBtn.getBoundingClientRect();
+        const menuWidth = 200;
+        let left = rect.left + window.scrollX;
+        if (left + menuWidth > window.innerWidth - 10) {
+            left = window.innerWidth - menuWidth - 10;
+        }
+        if (left < 10) left = 10;
+        const top = rect.bottom + window.scrollY + 4;
+
+        categoryContextMenu.style.top = `${top}px`;
+        categoryContextMenu.style.left = `${left}px`;
+        categoryContextMenu.classList.remove('hidden');
+    }
+
+    function closeCategoryContextMenu() {
+        if (categoryContextMenu) {
+            categoryContextMenu.classList.add('hidden');
+        }
+        currentContextMenuCategory = null;
+    }
+
+    function reorderCategories(sourceCat, targetCat, isBefore) {
+        const sb = getActiveSoundboard();
+        let cats = getCategories();
+        const srcIdx = cats.indexOf(sourceCat);
+        if (srcIdx === -1) return;
+        cats.splice(srcIdx, 1);
+        let tgtIdx = cats.indexOf(targetCat);
+        if (tgtIdx === -1) {
+            cats.push(sourceCat);
+        } else {
+            if (!isBefore) tgtIdx++;
+            cats.splice(tgtIdx, 0, sourceCat);
+        }
+        sb.categoryOrder = cats;
+        saveSoundboards();
+        renderCategories();
+        showToast('Categories rearranged', 'info');
+    }
+
     // ================= RENDERING =================
     function getCategories() {
         const sb = getActiveSoundboard();
@@ -1857,7 +2187,21 @@
         (sb.customCategories || []).forEach(c => {
             if (c) set.add(c.trim());
         });
-        return Array.from(set).sort((a, b) => {
+        const allCats = Array.from(set);
+
+        if (Array.isArray(sb.categoryOrder) && sb.categoryOrder.length > 0) {
+            allCats.sort((a, b) => {
+                const idxA = sb.categoryOrder.indexOf(a);
+                const idxB = sb.categoryOrder.indexOf(b);
+                if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+                if (idxA !== -1) return -1;
+                if (idxB !== -1) return 1;
+                return a.localeCompare(b);
+            });
+            return allCats;
+        }
+
+        return allCats.sort((a, b) => {
             const numA = parseInt(a.replace(/\D/g, ''), 10) || 0;
             const numB = parseInt(b.replace(/\D/g, ''), 10) || 0;
             if (numA && numB) return numA - numB;
@@ -1938,16 +2282,12 @@
                 <div role="button" tabindex="0" class="category-chip ${isActive ? 'active' : ''} ${isPinned ? 'is-pinned-cat' : ''}" 
                      data-cat="${escapeHtml(cat)}" 
                      draggable="true" 
-                     title="Click to view. Drag to bottom tray to pin.">
-                    <span class="chip-drag-handle" title="Drag to bottom tray to pin">⋮⋮</span>
+                     title="Click to view. Drag to rearrange or drag to bottom tray to pin.">
+                    <span class="chip-drag-handle" title="Drag to rearrange or pin">⋮⋮</span>
                     ${isPinned ? '<span class="pinned-indicator" title="Pinned to bottom window">📌</span>' : ''}
                     <span class="chip-name">${escapeHtml(cat)}</span>
                     <span class="chip-count">${count}</span>
-                    <div class="chip-actions">
-                        <span class="chip-btn chip-pin-btn" data-action="pin" title="Pin &quot;${escapeHtml(cat)}&quot; to bottom window">📌</span>
-                        <span class="chip-btn chip-edit-btn" data-action="edit" title="Rename category">✏️</span>
-                        <span class="chip-btn chip-delete-btn" data-action="delete" title="Delete category">🗑️</span>
-                    </div>
+                    <button type="button" class="chip-menu-trigger" data-cat="${escapeHtml(cat)}" title="Category options" aria-label="Category options">⋮</button>
                 </div>
             `;
         });
@@ -1959,17 +2299,10 @@
             const cat = chip.getAttribute('data-cat');
 
             chip.onclick = (e) => {
-                const actionBtn = e.target.closest('.chip-btn');
-                if (actionBtn) {
+                const trigger = e.target.closest('.chip-menu-trigger');
+                if (trigger) {
                     e.stopPropagation();
-                    const action = actionBtn.getAttribute('data-action');
-                    if (action === 'pin') {
-                        pinCategory(cat);
-                    } else if (action === 'edit') {
-                        openRenameCategoryModal(cat);
-                    } else if (action === 'delete') {
-                        openDeleteCategoryModal(cat);
-                    }
+                    openCategoryContextMenu(cat, trigger);
                     return;
                 }
 
@@ -1979,18 +2312,46 @@
                 updateBreadcrumb();
             };
 
-            // Drag support for category tabs
+            // Drag support for category tabs (rearranging and pinning)
             if (cat !== 'All' && cat !== 'Favorites') {
                 chip.ondragstart = (e) => {
                     e.dataTransfer.setData('text/plain', cat);
                     e.dataTransfer.setData('application/x-soundboard-category', cat);
                     e.dataTransfer.effectAllowed = 'copyMove';
                     chip.classList.add('is-dragging-chip');
+                    draggedCategoryName = cat;
                     if (generalSfxTray) generalSfxTray.classList.add('ready-to-drop');
                 };
 
+                chip.ondragover = (e) => {
+                    if (!draggedCategoryName || draggedCategoryName === cat) return;
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    const rect = chip.getBoundingClientRect();
+                    const isLeft = (e.clientX - rect.left) < (rect.width / 2);
+                    chip.classList.toggle('drag-target-left', isLeft);
+                    chip.classList.toggle('drag-target-right', !isLeft);
+                };
+
+                chip.ondragleave = () => {
+                    chip.classList.remove('drag-target-left', 'drag-target-right');
+                };
+
+                chip.ondrop = (e) => {
+                    chip.classList.remove('drag-target-left', 'drag-target-right');
+                    const sourceCat = e.dataTransfer.getData('application/x-soundboard-category') || draggedCategoryName;
+                    if (!sourceCat || sourceCat === cat) return;
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const rect = chip.getBoundingClientRect();
+                    const isLeft = (e.clientX - rect.left) < (rect.width / 2);
+                    reorderCategories(sourceCat, cat, isLeft);
+                };
+
                 chip.ondragend = () => {
+                    draggedCategoryName = null;
                     chip.classList.remove('is-dragging-chip');
+                    categoryChipsContainer.querySelectorAll('.category-chip').forEach(c => c.classList.remove('drag-target-left', 'drag-target-right'));
                     if (generalSfxTray) generalSfxTray.classList.remove('ready-to-drop', 'drag-over-tray');
                 };
             }
@@ -2173,6 +2534,7 @@
 
             categoryChipsContainer.addEventListener('mousedown', (e) => {
                 if (e.button !== 0) return;
+                if (e.target.closest('.category-chip') || e.target.closest('.chip-menu-trigger')) return;
                 isCatDragging = true;
                 hasMoved = false;
                 dragStartX = e.pageX - categoryChipsContainer.offsetLeft;
@@ -2481,6 +2843,68 @@
 
         // Global Keyboard Event Listener
         window.addEventListener('keydown', handleGlobalKeydown);
+
+        // Category Context Menu Items
+        if (catMenuPinBtn) {
+            catMenuPinBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (currentContextMenuCategory) {
+                    const cat = currentContextMenuCategory;
+                    closeCategoryContextMenu();
+                    pinCategory(cat);
+                }
+            });
+        }
+
+        if (catMenuRenameBtn) {
+            catMenuRenameBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (currentContextMenuCategory) {
+                    const cat = currentContextMenuCategory;
+                    closeCategoryContextMenu();
+                    openRenameCategoryModal(cat);
+                }
+            });
+        }
+
+        if (catMenuDeleteBtn) {
+            catMenuDeleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (currentContextMenuCategory) {
+                    const cat = currentContextMenuCategory;
+                    closeCategoryContextMenu();
+                    openDeleteCategoryModal(cat);
+                }
+            });
+        }
+
+        // Close Category Context Menu when clicking outside or pressing Escape
+        document.addEventListener('click', (e) => {
+            if (categoryContextMenu && !categoryContextMenu.classList.contains('hidden')) {
+                if (!e.target.closest('#categoryContextMenu') && !e.target.closest('.chip-menu-trigger')) {
+                    closeCategoryContextMenu();
+                }
+            }
+        });
+
+        // Add Sound Tabs (Local File vs Web Audio / YouTube URL)
+        if (addSoundTabFileBtn) {
+            addSoundTabFileBtn.addEventListener('click', () => switchAddSoundMode('file'));
+        }
+        if (addSoundTabUrlBtn) {
+            addSoundTabUrlBtn.addEventListener('click', () => switchAddSoundMode('url'));
+        }
+        if (verifyUrlBtn) {
+            verifyUrlBtn.addEventListener('click', () => verifyUrlInput());
+        }
+        if (newSoundUrlInput) {
+            newSoundUrlInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    verifyUrlInput();
+                }
+            });
+        }
 
         // Modal triggers
         openAddModalBtn.addEventListener('click', openAddModal);
@@ -2883,6 +3307,10 @@
             return;
         }
 
+        if (e.key === 'Escape') {
+            closeCategoryContextMenu();
+        }
+
         // Global Shortcuts
         if (e.code === 'Space' || e.key === 'Escape') {
             e.preventDefault();
@@ -2959,11 +3387,254 @@
     }
 
     // ================= ADD SOUND MODAL & DRAG/DROP =================
+    function switchAddSoundMode(mode) {
+        currentAddSoundMode = mode;
+        if (mode === 'url') {
+            if (addSoundTabUrlBtn) addSoundTabUrlBtn.classList.add('active');
+            if (addSoundTabFileBtn) addSoundTabFileBtn.classList.remove('active');
+            if (addSoundFileGroup) addSoundFileGroup.classList.add('hidden');
+            if (addSoundUrlGroup) addSoundUrlGroup.classList.remove('hidden');
+            if (newSoundUrlInput) newSoundUrlInput.focus();
+        } else {
+            if (addSoundTabFileBtn) addSoundTabFileBtn.classList.add('active');
+            if (addSoundTabUrlBtn) addSoundTabUrlBtn.classList.remove('active');
+            if (addSoundFileGroup) addSoundFileGroup.classList.remove('hidden');
+            if (addSoundUrlGroup) addSoundUrlGroup.classList.add('hidden');
+        }
+    }
+
+    function verifyYouTubeVideo(ytId) {
+        return new Promise((resolve, reject) => {
+            let isDone = false;
+            const timer = setTimeout(() => {
+                if (!isDone) {
+                    isDone = true;
+                    cleanup();
+                    resolve({
+                        type: 'youtube',
+                        youtubeId: ytId,
+                        url: `https://www.youtube.com/watch?v=${ytId}`,
+                        title: 'YouTube Audio Track',
+                        duration: 0
+                    });
+                }
+            }, 9000);
+
+            const container = document.getElementById('ytAudioPlayerContainer') || document.body;
+            const tempDivId = 'yt_temp_verify_' + Date.now();
+            const tempDiv = document.createElement('div');
+            tempDiv.id = tempDivId;
+            container.appendChild(tempDiv);
+
+            let tempPlayer = null;
+            let checkInterval = null;
+
+            const cleanup = () => {
+                if (checkInterval) clearInterval(checkInterval);
+                clearTimeout(timer);
+                if (tempPlayer) {
+                    try { tempPlayer.destroy(); } catch (e) {}
+                }
+                const el = document.getElementById(tempDivId);
+                if (el) el.remove();
+            };
+
+            const complete = (dur, title) => {
+                if (isDone) return;
+                isDone = true;
+                cleanup();
+                resolve({
+                    type: 'youtube',
+                    youtubeId: ytId,
+                    url: `https://www.youtube.com/watch?v=${ytId}`,
+                    title: title || 'YouTube Audio Track',
+                    duration: dur || 0
+                });
+            };
+
+            onYouTubeReady(() => {
+                try {
+                    tempPlayer = new window.YT.Player(tempDivId, {
+                        height: '100',
+                        width: '100',
+                        videoId: ytId,
+                        playerVars: { autoplay: 0, controls: 0 },
+                        events: {
+                            onReady: (event) => {
+                                const dur = event.target.getDuration();
+                                const vData = event.target.getVideoData ? event.target.getVideoData() : {};
+                                const title = vData.title || '';
+                                if (dur && dur > 0) {
+                                    complete(dur, title);
+                                } else {
+                                    let attempts = 0;
+                                    checkInterval = setInterval(() => {
+                                        attempts++;
+                                        try {
+                                            const d = event.target.getDuration();
+                                            if (d && d > 0) {
+                                                const t = event.target.getVideoData ? event.target.getVideoData().title : title;
+                                                complete(d, t);
+                                            } else if (attempts > 16) {
+                                                complete(0, title);
+                                            }
+                                        } catch (e) {
+                                            if (attempts > 16) complete(0, title);
+                                        }
+                                    }, 250);
+                                }
+                            },
+                            onError: (event) => {
+                                if (isDone) return;
+                                isDone = true;
+                                cleanup();
+                                let msg = 'YouTube video is private or unavailable.';
+                                if (event.data === 150 || event.data === 101) {
+                                    msg = 'This YouTube video has playback disabled outside of YouTube.';
+                                }
+                                reject(new Error(msg));
+                            }
+                        }
+                    });
+                } catch (err) {
+                    if (!isDone) {
+                        isDone = true;
+                        cleanup();
+                        reject(err);
+                    }
+                }
+            });
+        });
+    }
+
+    function verifyDirectAudioUrl(url) {
+        return new Promise((resolve, reject) => {
+            let isDone = false;
+            const audio = new Audio();
+            audio.preload = 'metadata';
+
+            const timer = setTimeout(() => {
+                if (!isDone) {
+                    isDone = true;
+                    audio.src = '';
+                    reject(new Error('Connection timed out while loading audio URL. Please check accessibility.'));
+                }
+            }, 9000);
+
+            audio.onloadedmetadata = () => {
+                if (isDone) return;
+                isDone = true;
+                clearTimeout(timer);
+                const duration = audio.duration || 0;
+                let filename = 'Web Audio Track';
+                try {
+                    const u = new URL(url);
+                    const pathParts = u.pathname.split('/');
+                    const last = pathParts[pathParts.length - 1];
+                    if (last) {
+                        filename = decodeURIComponent(last.replace(/\.[^/.]+$/, ""));
+                    }
+                } catch (e) {}
+                resolve({
+                    type: 'url',
+                    url,
+                    title: cleanTitle(filename),
+                    duration
+                });
+            };
+
+            audio.onerror = () => {
+                if (isDone) return;
+                isDone = true;
+                clearTimeout(timer);
+                reject(new Error('Cannot load audio from this URL. Please ensure it is a direct audio link (.mp3, .wav, .ogg, etc.).'));
+            };
+
+            audio.src = url;
+        });
+    }
+
+    async function verifyUrlInput() {
+        if (!newSoundUrlInput) return null;
+        const url = newSoundUrlInput.value.trim();
+        if (!url) {
+            if (urlValidationFeedback) {
+                urlValidationFeedback.className = 'url-feedback-text error';
+                urlValidationFeedback.textContent = 'Please enter a YouTube link or direct audio URL.';
+            }
+            verifiedAudioData = null;
+            return null;
+        }
+
+        if (urlValidationFeedback) {
+            urlValidationFeedback.className = 'url-feedback-text';
+            urlValidationFeedback.textContent = 'Checking link and audio duration...';
+        }
+        if (verifyUrlBtn) verifyUrlBtn.disabled = true;
+
+        try {
+            const ytId = extractYouTubeId(url);
+            let data = null;
+            if (ytId) {
+                data = await verifyYouTubeVideo(ytId);
+                // Try to get oEmbed title if available
+                try {
+                    const res = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${ytId}`);
+                    if (res.ok) {
+                        const json = await res.json();
+                        if (json && json.title) data.title = json.title;
+                    }
+                } catch (e) {}
+            } else {
+                data = await verifyDirectAudioUrl(url);
+            }
+
+            const maxSeconds = 600; // 10 minutes limit
+            if (data.duration > maxSeconds) {
+                verifiedAudioData = null;
+                if (urlValidationFeedback) {
+                    urlValidationFeedback.className = 'url-feedback-text error';
+                    urlValidationFeedback.textContent = `❌ Duration is ${formatTime(data.duration)}, which exceeds the 10-minute maximum limit (max 10:00). Please choose a shorter track.`;
+                }
+                return null;
+            }
+
+            verifiedAudioData = data;
+            if (urlValidationFeedback) {
+                urlValidationFeedback.className = 'url-feedback-text success';
+                urlValidationFeedback.textContent = `✓ Ready: "${data.title}" (${formatTime(data.duration)}). Within 10-minute limit.`;
+            }
+
+            if (!newSoundTitle.value.trim() && data.title) {
+                newSoundTitle.value = data.title;
+            }
+            return data;
+        } catch (err) {
+            verifiedAudioData = null;
+            if (urlValidationFeedback) {
+                urlValidationFeedback.className = 'url-feedback-text error';
+                urlValidationFeedback.textContent = `❌ ${err.message || 'Invalid or inaccessible audio link.'}`;
+            }
+            return null;
+        } finally {
+            if (verifyUrlBtn) verifyUrlBtn.disabled = false;
+        }
+    }
+
     function openAddModal() {
         pendingFilesToAdd = [];
         fileDropLabel.textContent = 'Click to browse audio files or drag & drop here';
         newSoundTitle.value = '';
         
+        // Reset tabs to file mode
+        switchAddSoundMode('file');
+        if (newSoundUrlInput) newSoundUrlInput.value = '';
+        if (urlValidationFeedback) {
+            urlValidationFeedback.className = 'url-feedback-text';
+            urlValidationFeedback.textContent = 'Supports YouTube video links or direct audio files. Duration must not exceed 10 minutes (600s).';
+        }
+        verifiedAudioData = null;
+
         let initialCat = (activeCategory !== 'All' && activeCategory !== 'Favorites') 
             ? activeCategory 
             : getPinnedCategory();
@@ -3014,10 +3685,6 @@
 
     async function handleAddSoundSubmit(e) {
         e.preventDefault();
-        if (pendingFilesToAdd.length === 0) {
-            alert('Please select or drop at least one audio file first!');
-            return;
-        }
 
         let category = newSoundCategory.value;
         if (category === '__create_new__') {
@@ -3034,6 +3701,62 @@
         const isBgm = newSoundIsBgm.checked;
         const loop = newSoundLoop.checked;
         const singleKeybind = newSoundKeybind.value.trim().toLowerCase();
+
+        // 1. URL / YouTube Import Mode
+        if (currentAddSoundMode === 'url') {
+            let data = verifiedAudioData;
+            const currentUrl = (newSoundUrlInput ? newSoundUrlInput.value.trim() : '');
+            if (!data || data.url !== currentUrl) {
+                data = await verifyUrlInput();
+            }
+
+            if (!data) {
+                showToast('Please provide a valid audio/video URL under 10 minutes.', 'error');
+                return;
+            }
+
+            if (data.duration > 600) {
+                showToast('Audio exceeds the 10-minute maximum limit! (Max 10:00)', 'error');
+                return;
+            }
+
+            const id = 'custom_url_' + Date.now();
+            const title = newSoundTitle.value.trim() || data.title;
+
+            sounds.unshift({
+                id,
+                title,
+                originalName: data.title,
+                src: data.url,
+                sourceType: data.type,
+                youtubeId: data.youtubeId || null,
+                duration: data.duration,
+                category,
+                isBgm,
+                loop,
+                volume: 1.0,
+                playbackRate: 1.0,
+                keybind: singleKeybind,
+                color,
+                favorite: false
+            });
+
+            saveSounds();
+            renderCategories();
+            renderSounds();
+            renderFolders();
+            renderGeneralSfxTray();
+            updateBreadcrumb();
+            closeAddModal();
+            showToast(`Added "${title}" from web URL!`, 'success');
+            return;
+        }
+
+        // 2. Local File Upload Mode
+        if (pendingFilesToAdd.length === 0) {
+            alert('Please select or drop at least one audio file first!');
+            return;
+        }
 
         for (let i = 0; i < pendingFilesToAdd.length; i++) {
             const file = pendingFilesToAdd[i];

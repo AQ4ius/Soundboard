@@ -12,6 +12,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <!-- Google Identity Services (OAuth 2.0) -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <!-- Vercel Web Analytics -->
+    <script>
+        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
+    <!-- YouTube IFrame API for Web Audio / YouTube Import -->
+    <script src="https://www.youtube.com/iframe_api" async></script>
 </head>
 <body>
     <div id="dropOverlay" class="drop-overlay hidden">
@@ -329,8 +336,14 @@
                 <button class="modal-close" id="closeAddModalBtn">✕</button>
             </div>
             <form id="addSoundForm" class="modal-body">
+                <!-- Source Selection Tabs -->
+                <div class="auth-tabs" style="margin-bottom: 12px;">
+                    <button type="button" class="auth-tab-btn active" id="addSoundTabFileBtn">📁 Local Audio File</button>
+                    <button type="button" class="auth-tab-btn" id="addSoundTabUrlBtn">🔗 Web Audio / YouTube URL</button>
+                </div>
+
                 <!-- File Picker / Drop Area -->
-                <div class="form-group">
+                <div class="form-group" id="addSoundFileGroup">
                     <label>Select Audio File</label>
                     <div class="file-drop-zone" id="modalFileDropZone">
                         <input type="file" id="soundFileInput" accept="audio/*,video/mp4" style="display:none;" multiple>
@@ -342,6 +355,16 @@
                         <p id="fileDropLabel">Click to browse audio files or drag & drop here</p>
                         <span class="file-hint">Supports MP3, WAV, OGG, M4A, FLAC, MP4 (multiple files allowed!)</span>
                     </div>
+                </div>
+
+                <!-- URL / YouTube Input Area (Hidden by default until tab selected) -->
+                <div class="form-group hidden" id="addSoundUrlGroup">
+                    <label for="newSoundUrlInput">Audio URL or YouTube Link (Max 10 minutes)</label>
+                    <div style="display:flex; gap:8px;">
+                        <input type="url" id="newSoundUrlInput" placeholder="Paste YouTube link (watch, shorts, youtu.be) or direct audio URL (.mp3, .wav)" autocomplete="off" style="flex:1;">
+                        <button type="button" class="pill-btn highlight" id="verifyUrlBtn" style="white-space:nowrap;">Check Link</button>
+                    </div>
+                    <div id="urlValidationFeedback" class="url-feedback-text">Supports YouTube video links or direct audio files. Duration must not exceed 10 minutes (600s).</div>
                 </div>
 
                 <div class="form-row">
@@ -583,7 +606,7 @@
 
                 <div class="settings-section">
                     <h3>Reset Options</h3>
-                    <p>Reset to the original 48 GRizal Audio stage sounds and initial keybind mappings.</p>
+                    <p>Reset your active soundboard setup back to initial default categories, sounds, and keybind mappings.</p>
                     <button id="resetDefaultsBtn" class="danger-btn outline">Reset to Default Sounds</button>
                 </div>
 
@@ -934,6 +957,26 @@
 
     <!-- Toast Notification Container -->
     <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Category Dropdown Action Menu (No accidental clicks!) -->
+    <div id="categoryContextMenu" class="category-context-menu hidden">
+        <button type="button" class="cat-menu-item" id="catMenuPinBtn">
+            <span class="cat-menu-icon" id="catMenuPinIcon">📌</span>
+            <span id="catMenuPinLabel">Pin to Bottom Tray</span>
+        </button>
+        <button type="button" class="cat-menu-item" id="catMenuRenameBtn">
+            <span class="cat-menu-icon">✏️</span>
+            <span>Rename Category</span>
+        </button>
+        <div class="cat-menu-divider"></div>
+        <button type="button" class="cat-menu-item danger" id="catMenuDeleteBtn">
+            <span class="cat-menu-icon">🗑️</span>
+            <span>Delete Category</span>
+        </button>
+    </div>
+
+    <!-- Hidden Host for YouTube Audio Streams -->
+    <div id="ytAudioPlayerContainer" style="position:fixed; bottom:-9999px; left:-9999px; width:1px; height:1px; opacity:0; pointer-events:none; visibility:hidden;"></div>
 
     <!-- Scripts -->
     <script src="sounds-data.js"></script>
