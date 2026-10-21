@@ -3490,7 +3490,7 @@
                                 cleanup();
                                 let msg = 'YouTube video is private or unavailable.';
                                 if (event.data === 150 || event.data === 101) {
-                                    msg = 'This YouTube video has playback disabled outside of YouTube.';
+                                    msg = 'Embedding is disabled by the copyright owner (e.g. Official VEVO / Topic release). Try a lyric video or community upload of this track, or download the MP3 and use the "Local Audio File" tab.';
                                 }
                                 reject(new Error(msg));
                             }
