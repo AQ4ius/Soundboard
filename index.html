@@ -49,13 +49,20 @@
                 </div>
             </div>
 
-            <!-- View Switcher Tabs (Home Folders vs Soundboard) -->
+            <!-- View Switcher Tabs (Home vs Folders vs Soundboard Stage) -->
             <div class="nav-view-switcher">
-                <button id="navHomeFoldersBtn" class="view-switch-btn active" title="View All Soundboards">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+                <button id="navLandingBtn" class="view-switch-btn active" title="Starting Home Page">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    <span>Home</span>
+                </button>
+                <button id="navHomeFoldersBtn" class="view-switch-btn" title="View All Soundboards">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
                         <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
                     </svg>
-                    <span>Home (Soundboards)</span>
+                    <span>Soundboards</span>
                 </button>
                 <button id="navSoundboardBtn" class="view-switch-btn" title="Open Active Soundboard">
                     <span id="activeSbNavIcon">🎭</span>
@@ -217,102 +224,260 @@
         </div>
     </header>
 
-    <!-- Home / Starting Screen (Voicemod Style) -->
-    <section id="homeFoldersView" class="home-folders-view">
-        <!-- Hero Welcome Section -->
-        <div class="voicemod-hero-card">
-            <div class="hero-glow-orb hero-glow-1"></div>
-            <div class="hero-glow-orb hero-glow-2"></div>
-            <div class="hero-inner">
-                <div class="hero-badge-pill">
-                    <span class="hero-sparkle">✨</span>
-                    <span>NEXT-GEN AUDIO MASTER CONTROL</span>
-                </div>
-                <h1 class="hero-headline">
-                    Transform Your Audio With <span class="hero-gradient-text">Instant Sound FX</span>
-                </h1>
-                <p class="hero-subtext">
-                    Play, stream, and trigger custom sound effects and background music with zero latency. Built for live stage control, streaming, gaming, and 100% offline access.
-                </p>
-
-                <!-- Hero Actions -->
-                <div class="hero-actions-row">
-                    <button id="heroLaunchStageBtn" class="hero-btn-primary" type="button" title="Launch Active Soundboard">
-                        <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
-                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                        </svg>
-                        <span>Launch Soundboard</span>
-                        <span id="heroActiveNameTag" class="hero-active-tag">GRIZAL</span>
-                    </button>
-                    <button id="heroNewFolderBtn" class="hero-btn-secondary" type="button" title="Create New Soundboard">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                        </svg>
-                        <span>+ New Soundboard</span>
-                    </button>
-                    <button id="heroPwaInstallBtn" class="hero-btn-install" type="button" title="Install Offline PWA App">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="7 10 12 15 17 10"></polyline>
-                            <line x1="12" y1="15" x2="12" y2="3"></line>
-                        </svg>
-                        <span>Install App (Offline)</span>
-                    </button>
-                </div>
-
-                <!-- Quick Sound Previews directly on Home Screen -->
-                <div class="hero-quick-preview">
-                    <div class="quick-preview-label">
-                        <span class="preview-dot"></span>
-                        <span>QUICK SOUND PREVIEW:</span>
-                    </div>
-                    <div class="quick-preview-chips">
-                        <button type="button" class="quick-test-chip" data-sound-id="sound_1" title="Play Error SFX">
-                            <span class="chip-play-icon">▶</span>
-                            <span>Error SFX</span>
-                        </button>
-                        <button type="button" class="quick-test-chip" data-sound-id="sound_2" title="Play Glitch SFX">
-                            <span class="chip-play-icon">▶</span>
-                            <span>Glitch</span>
-                        </button>
-                        <button type="button" class="quick-test-chip" data-sound-id="sound_3" title="Play BGM Damaso">
-                            <span class="chip-play-icon">▶</span>
-                            <span>BGM Damaso</span>
-                        </button>
-                        <button type="button" class="quick-test-chip stop-preview" id="heroStopPreviewBtn" title="Stop preview audio">
-                            <span>⏹ Stop</span>
-                        </button>
+    <!-- ================= STARTING HOME SCREEN (VOICEMOD & DISCORD STYLE) ================= -->
+    <div id="landingView" class="landing-page-view">
+        <!-- Landing Navbar (Matches Voicemod Image 1 & Discord Image 2) -->
+        <nav class="landing-navbar">
+            <div class="landing-nav-left">
+                <div class="brand">
+                    <img src="AQSoundboard_Logo.png" alt="AQSound Logo" class="brand-logo-img">
+                    <div class="brand-title">
+                        <h1>AQSound <span>Board</span></h1>
+                        <span class="brand-subtitle">Real-Time Soundboard</span>
                     </div>
                 </div>
             </div>
-        </div>
+            <div class="landing-nav-links">
+                <a href="#landingFeatures" class="landing-nav-link">Features</a>
+                <a href="#landingMockup" class="landing-nav-link">Live Mockup</a>
+                <a href="#landingPlatforms" class="landing-nav-link">Platforms</a>
+                <button type="button" class="landing-nav-link-btn" id="landingNavOfflineBtn">Offline PWA</button>
+            </div>
+            <div class="landing-nav-actions">
+                <button id="landingNavInstallBtn" class="landing-btn-pill-white" type="button" title="Install Desktop/Mobile App">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    <span>Install App</span>
+                </button>
+                <button id="landingNavOpenBtn" class="landing-btn-pill-cyan" type="button" title="Open Stage Soundboard">
+                    <span>Open Soundboard →</span>
+                </button>
+            </div>
+        </nav>
 
-        <!-- 4-Feature Highlights Grid (Voicemod style) -->
-        <div class="hero-features-grid">
-            <div class="hero-feature-card">
-                <div class="feature-icon-wrap" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">⚡</div>
-                <h4>Instant Zero-Lag Playback</h4>
-                <p>Trigger sound effects and loops with physical keyboard hotkeys or quick-tap touch controls.</p>
-            </div>
-            <div class="hero-feature-card">
-                <div class="feature-icon-wrap" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">🎛️</div>
-                <h4>Multi-Track Audio Dock</h4>
-                <p>Layer multiple BGM tracks & SFX simultaneously or toggle exclusive Solo mode with master panic stop.</p>
-            </div>
-            <div class="hero-feature-card">
-                <div class="feature-icon-wrap" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">📴</div>
-                <h4>100% Offline Ready</h4>
-                <p>Install on desktop & mobile with PWA caching. Play all 48 default and custom sounds without Wi-Fi.</p>
-            </div>
-            <div class="hero-feature-card">
-                <div class="feature-icon-wrap" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">📁</div>
-                <h4>Soundboard Library</h4>
-                <p>Create unlimited project soundboards, custom chapters, drag-and-drop pinned trays, and backups.</p>
-            </div>
-        </div>
+        <!-- Hero Section (Split Layout like Voicemod Image 1 & Discord Image 2) -->
+        <section class="landing-hero-section">
+            <div class="landing-glow-orb landing-glow-purple"></div>
+            <div class="landing-glow-orb landing-glow-cyan"></div>
 
-        <!-- Folders Header / Library Section -->
+            <div class="landing-hero-container">
+                <!-- Left: Bold Typography & Actions -->
+                <div class="landing-hero-content">
+                    <div class="landing-badge">
+                        <span class="badge-dot"></span>
+                        <span>THE ULTIMATE DIGITAL SOUNDBOARD</span>
+                    </div>
+                    <h1 class="landing-hero-title">
+                        UNLIMITED DIGITAL<br>
+                        <span class="landing-title-cyan">SOUNDBOARDS APP</span>
+                    </h1>
+                    <p class="landing-hero-description">
+                        Play sound clips <strong>instantly</strong> for immediate reactions from your <strong>group chats</strong>, <strong>streaming audience</strong>, and <strong>live stage</strong>. Upload any sound you like, trigger custom keybinds, and use it <strong>100% offline</strong> without Wi-Fi.
+                    </p>
+
+                    <!-- Big CTA Buttons (Matches Image 1 & 2) -->
+                    <div class="landing-cta-group">
+                        <button id="landingDownloadBtn" class="landing-cta-primary-white" type="button">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            <span>DOWNLOAD FOR FREE</span>
+                        </button>
+                        <button id="landingOpenBrowserBtn" class="landing-cta-secondary-cyan" type="button">
+                            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                            </svg>
+                            <span>Open in your browser</span>
+                        </button>
+                    </div>
+
+                    <div class="landing-hero-badges-row">
+                        <span class="hero-chip-tag">✓ Available on Mobile & Desktop</span>
+                        <span class="hero-chip-tag">✓ 100% Free & Open</span>
+                        <span class="hero-chip-tag">✓ Works Offline No Wi-Fi</span>
+                    </div>
+                </div>
+
+                <!-- Right: Device Mockup Stage with Live Interactive Sounds (Matches Image 1 & 2) -->
+                <div class="landing-mockup-wrapper" id="landingMockup">
+                    <!-- Floating Sticker Badges (Voicemod style) -->
+                    <div class="floating-sticker sticker-meow">
+                        <span>MEOW! 🐱</span>
+                    </div>
+                    <div class="floating-sticker sticker-zero-lag">
+                        <span>⚡ 0ms Latency</span>
+                    </div>
+                    <div class="floating-sticker sticker-offline">
+                        <span>📴 100% Offline</span>
+                    </div>
+
+                    <!-- Desktop Frame Mockup -->
+                    <div class="mockup-desktop-frame">
+                        <div class="mockup-window-header">
+                            <div class="mockup-dots">
+                                <span class="dot red"></span>
+                                <span class="dot yellow"></span>
+                                <span class="dot green"></span>
+                            </div>
+                            <span class="mockup-window-title">AQSound Master Stage</span>
+                            <div class="mockup-live-indicator">
+                                <span class="live-pulse"></span>
+                                <span>LIVE</span>
+                            </div>
+                        </div>
+
+                        <div class="mockup-soundboard-body">
+                            <div class="mockup-cat-bar">
+                                <span class="mockup-cat active">All (48)</span>
+                                <span class="mockup-cat">General SFX</span>
+                                <span class="mockup-cat">Kabanata 1</span>
+                                <span class="mockup-cat">Ambient</span>
+                            </div>
+
+                            <!-- Interactive Sound Grid Mockup (Users can click to test sounds!) -->
+                            <div class="mockup-sound-grid">
+                                <button type="button" class="mockup-sound-btn" data-sound-id="sound_1" title="Play Error SFX">
+                                    <div class="mockup-btn-icon">🚨</div>
+                                    <span class="mockup-btn-title">Error SFX</span>
+                                    <span class="mockup-btn-key">1</span>
+                                </button>
+                                <button type="button" class="mockup-sound-btn" data-sound-id="sound_2" title="Play Glitch">
+                                    <div class="mockup-btn-icon">⚡</div>
+                                    <span class="mockup-btn-title">Glitch</span>
+                                    <span class="mockup-btn-key">2</span>
+                                </button>
+                                <button type="button" class="mockup-sound-btn" data-sound-id="sound_3" title="Play BGM Damaso">
+                                    <div class="mockup-btn-icon">🎵</div>
+                                    <span class="mockup-btn-title">BGM Damaso</span>
+                                    <span class="mockup-btn-key">3</span>
+                                </button>
+                                <button type="button" class="mockup-sound-btn" data-sound-id="sound_4" title="Play Stage Bell">
+                                    <div class="mockup-btn-icon">🔔</div>
+                                    <span class="mockup-btn-title">Stage Bell</span>
+                                    <span class="mockup-btn-key">4</span>
+                                </button>
+                                <button type="button" class="mockup-sound-btn" data-sound-id="sound_5" title="Play Impact Boom">
+                                    <div class="mockup-btn-icon">💥</div>
+                                    <span class="mockup-btn-title">Impact Boom</span>
+                                    <span class="mockup-btn-key">5</span>
+                                </button>
+                                <button type="button" class="mockup-sound-btn" data-sound-id="sound_6" title="Play Applause">
+                                    <div class="mockup-btn-icon">👏</div>
+                                    <span class="mockup-btn-title">Applause</span>
+                                    <span class="mockup-btn-key">6</span>
+                                </button>
+                            </div>
+
+                            <!-- Mockup Bottom Dock -->
+                            <div class="mockup-bottom-dock">
+                                <div class="mockup-dock-left">
+                                    <span class="soundwave-bar bar-1"></span>
+                                    <span class="soundwave-bar bar-2"></span>
+                                    <span class="soundwave-bar bar-3"></span>
+                                    <span class="soundwave-bar bar-4"></span>
+                                    <span style="font-size: 11px; color:#fff; font-weight:700;">Click any button to test sound</span>
+                                </div>
+                                <button type="button" class="mockup-stop-all" id="mockupStopAllBtn">STOP ALL</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Floating Mobile Mockup Frame (Matches Image 1 & 2) -->
+                    <div class="mockup-mobile-frame">
+                        <div class="mobile-notch"></div>
+                        <div class="mobile-screen-content">
+                            <span class="mobile-title">Mobile Soundboard</span>
+                            <div class="mobile-sound-row">
+                                <span class="mini-chip">Error SFX</span>
+                                <span class="mini-chip">Glitch</span>
+                            </div>
+                            <div class="mobile-sound-row">
+                                <span class="mini-chip">BGM</span>
+                                <span class="mini-chip">Cheer</span>
+                            </div>
+                            <div class="mobile-dock-pill">
+                                <span>▶ Multi-Track</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Platform Integration Banner (Matches Image 1 "OUR PARTNERS" / Image 2) -->
+        <section class="landing-platforms-bar" id="landingPlatforms">
+            <span class="platforms-title">WORKS WHEREVER YOU HANG OUT, STREAM & PERFORM</span>
+            <div class="platforms-row">
+                <span class="platform-item"><span class="platform-icon">🎮</span> Discord</span>
+                <span class="platform-item"><span class="platform-icon">🟣</span> Twitch</span>
+                <span class="platform-item"><span class="platform-icon">📹</span> OBS Studio</span>
+                <span class="platform-item"><span class="platform-icon">▶️</span> YouTube</span>
+                <span class="platform-item"><span class="platform-icon">🎭</span> Live Theatre</span>
+                <span class="platform-item"><span class="platform-icon">📱</span> iOS & Android</span>
+                <span class="platform-item"><span class="platform-icon">💻</span> Windows & Mac</span>
+            </div>
+        </section>
+
+        <!-- Feature Showcase Grid (Voicemod & Discord style) -->
+        <section class="landing-features-section" id="landingFeatures">
+            <div class="section-heading-box">
+                <h2 class="section-big-title">Engineered for <span>Instant Impact</span></h2>
+                <p class="section-sub">Everything you need to control audio seamlessly live, online, or completely offline.</p>
+            </div>
+
+            <div class="landing-features-grid">
+                <div class="landing-feat-card">
+                    <div class="feat-card-glow glow-blue"></div>
+                    <div class="feat-card-icon">⚡</div>
+                    <h3>Instant Zero-Lag Playback</h3>
+                    <p>Trigger sound effects and loops with physical keyboard hotkeys or quick-tap touch controls. Zero audio delay.</p>
+                </div>
+
+                <div class="landing-feat-card">
+                    <div class="feat-card-glow glow-purple"></div>
+                    <div class="feat-card-icon">🎛️</div>
+                    <h3>Multi-Track Audio Dock</h3>
+                    <p>Layer multiple BGM tracks & sound effects simultaneously with individual volume sliders and an instant master stop.</p>
+                </div>
+
+                <div class="landing-feat-card">
+                    <div class="feat-card-glow glow-green"></div>
+                    <div class="feat-card-icon">📴</div>
+                    <h3>100% Offline Ready</h3>
+                    <p>Install on desktop or mobile. Service worker caches all 48 default sound clips and local IndexedDB holds your custom uploads.</p>
+                </div>
+
+                <div class="landing-feat-card">
+                    <div class="feat-card-glow glow-gold"></div>
+                    <div class="feat-card-icon">📁</div>
+                    <h3>Soundboard Library & Folders</h3>
+                    <p>Create unlimited project soundboards, custom chapters, drag-and-drop pinned trays, and full JSON configuration backup.</p>
+                </div>
+            </div>
+
+            <!-- Big Bottom CTA -->
+            <div class="landing-bottom-cta">
+                <h2>Ready to trigger sound clips like a pro?</h2>
+                <p>Jump right into the soundboard or explore your custom soundboard libraries.</p>
+                <div class="bottom-cta-buttons">
+                    <button id="landingBottomLaunchBtn" class="landing-cta-secondary-cyan large" type="button">
+                        <span>Open Active Soundboard (GRIZAL) →</span>
+                    </button>
+                    <button id="landingBottomFoldersBtn" class="landing-cta-primary-white large" type="button">
+                        <span>Browse Soundboard Folders</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ================= SOUNDBOARD LIBRARY / FOLDERS VIEW ================= -->
+    <section id="homeFoldersView" class="home-folders-view hidden">
         <div class="home-folders-header">
             <div class="folders-header-left">
                 <h2>📁 Soundboard Library</h2>

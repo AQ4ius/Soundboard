@@ -75,13 +75,15 @@
     const emptyState = document.getElementById('emptyState');
 
     // Views & Nav Switcher
-    let currentMainView = 'home'; // Default to Home Screen so user sees folders!
+    let currentMainView = 'landing'; // Default to Starting Home Screen (Voicemod & Discord style)
     let isSfxTrayCollapsed = false;
 
+    const navLandingBtn = document.getElementById('navLandingBtn');
     const navHomeFoldersBtn = document.getElementById('navHomeFoldersBtn');
     const navSoundboardBtn = document.getElementById('navSoundboardBtn');
     const activeSbNavIcon = document.getElementById('activeSbNavIcon');
     const activeSoundboardNavLabel = document.getElementById('activeSoundboardNavLabel');
+    const landingView = document.getElementById('landingView');
     const homeFoldersView = document.getElementById('homeFoldersView');
     const stageSoundboardView = document.getElementById('stageSoundboardView');
     const foldersGrid = document.getElementById('foldersGrid');
@@ -1928,18 +1930,36 @@
     // ================= VIEWS & FOLDERS =================
     function switchMainView(viewName) {
         currentMainView = viewName;
-        if (viewName === 'home') {
+        if (viewName === 'landing') {
+            document.body.classList.add('is-landing-view');
+            document.body.classList.remove('is-home-view');
+            if (landingView) landingView.classList.remove('hidden');
+            if (homeFoldersView) homeFoldersView.classList.add('hidden');
+            if (stageSoundboardView) stageSoundboardView.classList.add('hidden');
+            if (navLandingBtn) navLandingBtn.classList.add('active');
+            if (navHomeFoldersBtn) navHomeFoldersBtn.classList.remove('active');
+            if (navSoundboardBtn) navSoundboardBtn.classList.remove('active');
+            if (generalSfxTray) generalSfxTray.classList.add('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else if (viewName === 'home') {
+            document.body.classList.remove('is-landing-view');
             document.body.classList.add('is-home-view');
+            if (landingView) landingView.classList.add('hidden');
             if (homeFoldersView) homeFoldersView.classList.remove('hidden');
             if (stageSoundboardView) stageSoundboardView.classList.add('hidden');
+            if (navLandingBtn) navLandingBtn.classList.remove('active');
             if (navHomeFoldersBtn) navHomeFoldersBtn.classList.add('active');
             if (navSoundboardBtn) navSoundboardBtn.classList.remove('active');
             if (generalSfxTray) generalSfxTray.classList.add('hidden');
             renderFolders();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
+            document.body.classList.remove('is-landing-view');
             document.body.classList.remove('is-home-view');
+            if (landingView) landingView.classList.add('hidden');
             if (homeFoldersView) homeFoldersView.classList.add('hidden');
             if (stageSoundboardView) stageSoundboardView.classList.remove('hidden');
+            if (navLandingBtn) navLandingBtn.classList.remove('active');
             if (navHomeFoldersBtn) navHomeFoldersBtn.classList.remove('active');
             if (navSoundboardBtn) navSoundboardBtn.classList.add('active');
             if (generalSfxTray) generalSfxTray.classList.remove('hidden');
@@ -1948,6 +1968,7 @@
             renderCategories();
             renderSounds();
             renderGeneralSfxTray();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     }
 
@@ -3065,12 +3086,67 @@
             });
         }
 
-        // Nav View Switcher (Home Folders vs Soundboard Stage)
+        // Nav View Switcher (Landing vs Home Folders vs Soundboard Stage)
+        if (navLandingBtn) navLandingBtn.addEventListener('click', () => switchMainView('landing'));
         if (navHomeFoldersBtn) navHomeFoldersBtn.addEventListener('click', () => switchMainView('home'));
         if (navSoundboardBtn) navSoundboardBtn.addEventListener('click', () => switchMainView('stage'));
         if (backToFoldersBtn) backToFoldersBtn.addEventListener('click', () => switchMainView('home'));
 
-        // Voicemod-Style Starting Home Screen Hero Actions
+        // Brand logo clicks anywhere return to starting home view
+        const appBrandLogos = document.querySelectorAll('.app-header .brand');
+        appBrandLogos.forEach(logo => {
+            logo.style.cursor = 'pointer';
+            logo.addEventListener('click', () => switchMainView('landing'));
+        });
+
+        // Voicemod / Discord style Starting Home Screen actions
+        const landingNavOpenBtn = document.getElementById('landingNavOpenBtn');
+        const landingOpenBrowserBtn = document.getElementById('landingOpenBrowserBtn');
+        const landingBottomLaunchBtn = document.getElementById('landingBottomLaunchBtn');
+        const landingBottomFoldersBtn = document.getElementById('landingBottomFoldersBtn');
+        const landingNavInstallBtn = document.getElementById('landingNavInstallBtn');
+        const landingDownloadBtn = document.getElementById('landingDownloadBtn');
+        const landingNavOfflineBtn = document.getElementById('landingNavOfflineBtn');
+        const mockupStopAllBtn = document.getElementById('mockupStopAllBtn');
+
+        const triggerPwaOrGuide = () => {
+            const headerInstall = document.getElementById('headerInstallBtn');
+            if (headerInstall) {
+                headerInstall.click();
+            } else {
+                const guideModal = document.getElementById('pwaInstallGuideModal');
+                if (guideModal) guideModal.classList.remove('hidden');
+            }
+        };
+
+        if (landingNavOpenBtn) landingNavOpenBtn.addEventListener('click', () => switchMainView('stage'));
+        if (landingOpenBrowserBtn) landingOpenBrowserBtn.addEventListener('click', () => switchMainView('stage'));
+        if (landingBottomLaunchBtn) landingBottomLaunchBtn.addEventListener('click', () => switchMainView('stage'));
+        if (landingBottomFoldersBtn) landingBottomFoldersBtn.addEventListener('click', () => switchMainView('home'));
+        if (landingNavInstallBtn) landingNavInstallBtn.addEventListener('click', triggerPwaOrGuide);
+        if (landingDownloadBtn) landingDownloadBtn.addEventListener('click', triggerPwaOrGuide);
+        if (landingNavOfflineBtn) landingNavOfflineBtn.addEventListener('click', triggerPwaOrGuide);
+        if (mockupStopAllBtn) mockupStopAllBtn.addEventListener('click', stopAllSounds);
+
+        // Mockup interactive sound buttons (Clicking them plays real sound!)
+        const mockupSoundBtns = document.querySelectorAll('.mockup-sound-btn[data-sound-id]');
+        mockupSoundBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const sId = btn.getAttribute('data-sound-id');
+                if (sId) {
+                    btn.classList.add('playing');
+                    const soundObj = sounds.find(s => s.id === sId) || (window.DEFAULT_SOUNDS && window.DEFAULT_SOUNDS.find(s => s.id === sId));
+                    if (soundObj) {
+                        playSound(sId);
+                    }
+                    setTimeout(() => {
+                        btn.classList.remove('playing');
+                    }, 1200);
+                }
+            });
+        });
+
+        // Voicemod-Style Starting Home Screen Hero Actions (legacy fallbacks)
         const heroLaunchStageBtn = document.getElementById('heroLaunchStageBtn');
         const heroNewFolderBtn = document.getElementById('heroNewFolderBtn');
         const heroPwaInstallBtn = document.getElementById('heroPwaInstallBtn');
