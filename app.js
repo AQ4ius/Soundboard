@@ -1201,6 +1201,8 @@
         const sb = getActiveSoundboard();
         if (activeSoundboardNavLabel) activeSoundboardNavLabel.textContent = sb.name;
         if (activeSbNavIcon) activeSbNavIcon.textContent = sb.icon || '🎭';
+        const heroTag = document.getElementById('heroActiveNameTag');
+        if (heroTag) heroTag.textContent = (sb.name || 'GRIZAL').toUpperCase();
     }
 
     // ================= TOAST NOTIFICATIONS =================
@@ -3067,6 +3069,37 @@
         if (navHomeFoldersBtn) navHomeFoldersBtn.addEventListener('click', () => switchMainView('home'));
         if (navSoundboardBtn) navSoundboardBtn.addEventListener('click', () => switchMainView('stage'));
         if (backToFoldersBtn) backToFoldersBtn.addEventListener('click', () => switchMainView('home'));
+
+        // Voicemod-Style Starting Home Screen Hero Actions
+        const heroLaunchStageBtn = document.getElementById('heroLaunchStageBtn');
+        const heroNewFolderBtn = document.getElementById('heroNewFolderBtn');
+        const heroPwaInstallBtn = document.getElementById('heroPwaInstallBtn');
+        const heroStopPreviewBtn = document.getElementById('heroStopPreviewBtn');
+
+        if (heroLaunchStageBtn) {
+            heroLaunchStageBtn.addEventListener('click', () => switchMainView('stage'));
+        }
+        if (heroNewFolderBtn) {
+            heroNewFolderBtn.addEventListener('click', openCreateSoundboardModal);
+        }
+        if (heroPwaInstallBtn) {
+            heroPwaInstallBtn.addEventListener('click', () => {
+                const headerInstall = document.getElementById('headerInstallBtn');
+                if (headerInstall) headerInstall.click();
+            });
+        }
+        if (heroStopPreviewBtn) {
+            heroStopPreviewBtn.addEventListener('click', stopAllSounds);
+        }
+
+        // Hero quick preview sound buttons
+        const previewChips = document.querySelectorAll('.quick-test-chip[data-sound-id]');
+        previewChips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                const sId = chip.getAttribute('data-sound-id');
+                if (sId) playSound(sId);
+            });
+        });
 
         // Folder / Soundboard CRUD triggers
         if (createFolderBtn) createFolderBtn.addEventListener('click', openCreateSoundboardModal);

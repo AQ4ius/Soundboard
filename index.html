@@ -217,12 +217,106 @@
         </div>
     </header>
 
-    <!-- Home / Folders View (Home Screen) -->
+    <!-- Home / Starting Screen (Voicemod Style) -->
     <section id="homeFoldersView" class="home-folders-view">
+        <!-- Hero Welcome Section -->
+        <div class="voicemod-hero-card">
+            <div class="hero-glow-orb hero-glow-1"></div>
+            <div class="hero-glow-orb hero-glow-2"></div>
+            <div class="hero-inner">
+                <div class="hero-badge-pill">
+                    <span class="hero-sparkle">✨</span>
+                    <span>NEXT-GEN AUDIO MASTER CONTROL</span>
+                </div>
+                <h1 class="hero-headline">
+                    Transform Your Audio With <span class="hero-gradient-text">Instant Sound FX</span>
+                </h1>
+                <p class="hero-subtext">
+                    Play, stream, and trigger custom sound effects and background music with zero latency. Built for live stage control, streaming, gaming, and 100% offline access.
+                </p>
+
+                <!-- Hero Actions -->
+                <div class="hero-actions-row">
+                    <button id="heroLaunchStageBtn" class="hero-btn-primary" type="button" title="Launch Active Soundboard">
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                        <span>Launch Soundboard</span>
+                        <span id="heroActiveNameTag" class="hero-active-tag">GRIZAL</span>
+                    </button>
+                    <button id="heroNewFolderBtn" class="hero-btn-secondary" type="button" title="Create New Soundboard">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        <span>+ New Soundboard</span>
+                    </button>
+                    <button id="heroPwaInstallBtn" class="hero-btn-install" type="button" title="Install Offline PWA App">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        <span>Install App (Offline)</span>
+                    </button>
+                </div>
+
+                <!-- Quick Sound Previews directly on Home Screen -->
+                <div class="hero-quick-preview">
+                    <div class="quick-preview-label">
+                        <span class="preview-dot"></span>
+                        <span>QUICK SOUND PREVIEW:</span>
+                    </div>
+                    <div class="quick-preview-chips">
+                        <button type="button" class="quick-test-chip" data-sound-id="sound_1" title="Play Error SFX">
+                            <span class="chip-play-icon">▶</span>
+                            <span>Error SFX</span>
+                        </button>
+                        <button type="button" class="quick-test-chip" data-sound-id="sound_2" title="Play Glitch SFX">
+                            <span class="chip-play-icon">▶</span>
+                            <span>Glitch</span>
+                        </button>
+                        <button type="button" class="quick-test-chip" data-sound-id="sound_3" title="Play BGM Damaso">
+                            <span class="chip-play-icon">▶</span>
+                            <span>BGM Damaso</span>
+                        </button>
+                        <button type="button" class="quick-test-chip stop-preview" id="heroStopPreviewBtn" title="Stop preview audio">
+                            <span>⏹ Stop</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4-Feature Highlights Grid (Voicemod style) -->
+        <div class="hero-features-grid">
+            <div class="hero-feature-card">
+                <div class="feature-icon-wrap" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">⚡</div>
+                <h4>Instant Zero-Lag Playback</h4>
+                <p>Trigger sound effects and loops with physical keyboard hotkeys or quick-tap touch controls.</p>
+            </div>
+            <div class="hero-feature-card">
+                <div class="feature-icon-wrap" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">🎛️</div>
+                <h4>Multi-Track Audio Dock</h4>
+                <p>Layer multiple BGM tracks & SFX simultaneously or toggle exclusive Solo mode with master panic stop.</p>
+            </div>
+            <div class="hero-feature-card">
+                <div class="feature-icon-wrap" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">📴</div>
+                <h4>100% Offline Ready</h4>
+                <p>Install on desktop & mobile with PWA caching. Play all 48 default and custom sounds without Wi-Fi.</p>
+            </div>
+            <div class="hero-feature-card">
+                <div class="feature-icon-wrap" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">📁</div>
+                <h4>Soundboard Library</h4>
+                <p>Create unlimited project soundboards, custom chapters, drag-and-drop pinned trays, and backups.</p>
+            </div>
+        </div>
+
+        <!-- Folders Header / Library Section -->
         <div class="home-folders-header">
             <div class="folders-header-left">
-                <h2>📁 Soundboard Folders</h2>
-                <p>Select a soundboard folder (e.g. <strong>My Soundboard</strong>) to enter its categories and sounds, or create a new folder for a specific soundboard.</p>
+                <h2>📁 Soundboard Library</h2>
+                <p>Select a soundboard folder (e.g. <strong>GRIZAL</strong>) to enter its categories and sound buttons, or create a new soundboard folder.</p>
             </div>
             <div class="folders-header-right">
                 <button id="createFolderBtn" class="primary-btn">
@@ -230,7 +324,7 @@
                         <line x1="12" y1="5" x2="12" y2="19"></line>
                         <line x1="5" y1="12" x2="19" y2="12"></line>
                     </svg>
-                    <span>New Soundboard Folder</span>
+                    <span>+ New Soundboard</span>
                 </button>
             </div>
         </div>
