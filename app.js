@@ -31,12 +31,12 @@
         },
         {
             id: 'grizal',
-            username: 'grizal',
-            displayName: 'GRizal Production',
-            email: 'grizal.team@gmail.com',
+            username: 'team',
+            displayName: 'Production Team',
+            email: 'production.team@aqsound.local',
             role: 'team',
             password: 'grizal_production',
-            avatarLetter: 'G',
+            avatarLetter: 'P',
             avatarBg: '#8b5cf6'
         }
     ];
@@ -402,7 +402,7 @@
                 menuRoleTag.textContent = '👑 Owner Account';
                 menuRoleTag.className = 'role-tag owner';
             } else if (user.role === 'team') {
-                menuRoleTag.textContent = '🎭 GRizal Team Account';
+                menuRoleTag.textContent = '🎭 Production Team';
                 menuRoleTag.className = 'role-tag team';
             } else {
                 menuRoleTag.textContent = '👤 Personal Account';
@@ -496,7 +496,7 @@
                 editProfileHeaderRole.textContent = '👑 Owner Account';
                 editProfileHeaderRole.className = 'role-tag owner';
             } else if (user.role === 'team') {
-                editProfileHeaderRole.textContent = '🎭 GRizal Team Account';
+                editProfileHeaderRole.textContent = '🎭 Production Team';
                 editProfileHeaderRole.className = 'role-tag team';
             } else {
                 editProfileHeaderRole.textContent = '👤 Personal Account';
@@ -939,7 +939,7 @@
 
             const pct = Math.round((status.cached / status.total) * 100);
             if (status.cached === status.total) {
-                offlineCountBadge.textContent = `✓ ${status.cached} / ${status.total} sounds cached (100% Offline Ready)`;
+                offlineCountBadge.textContent = `✓ ${status.cached} / ${status.total} sounds cached (Offline Ready)`;
                 offlineCountBadge.style.color = '#34d399';
                 if (downloadAllSoundsBtn) {
                     downloadAllSoundsBtn.innerHTML = `
@@ -1005,7 +1005,7 @@
                 }
 
                 if (showToasts) {
-                    showToast(`All ${cachedCount} sounds successfully downloaded! Ready 100% offline.`, 'success');
+                    showToast(`All ${cachedCount} sounds successfully downloaded! Ready for offline use.`, 'success');
                 }
             } catch (e) {
                 console.error('[Offline Cache] Download error:', e);
@@ -1119,9 +1119,9 @@
 
                 soundboards = [
                     {
-                        id: 'grizal',
-                        name: 'GRIZAL',
-                        description: 'Stage Play & Sound Effects Master Control for GRizal acts and chapters',
+                        id: 'master',
+                        name: 'Master Soundboard',
+                        description: 'Stage Play & Sound Effects Master Control for acts and chapters',
                         icon: '🎭',
                         color: '#3b82f6',
                         sounds: initialSounds,
@@ -1204,7 +1204,7 @@
         if (activeSoundboardNavLabel) activeSoundboardNavLabel.textContent = sb.name;
         if (activeSbNavIcon) activeSbNavIcon.textContent = sb.icon || '🎭';
         const heroTag = document.getElementById('heroActiveNameTag');
-        if (heroTag) heroTag.textContent = (sb.name || 'GRIZAL').toUpperCase();
+        if (heroTag) heroTag.textContent = (sb.name || 'SOUNDBOARD').toUpperCase();
     }
 
     // ================= TOAST NOTIFICATIONS =================
