@@ -733,6 +733,169 @@
         }
     }
 
+    // ================= PWA & OFFLINE INSTALL SUPPORT =================
+    let deferredPrompt = null;
+
+    function initPWAOfflineSupport() {
+        // 1. Register Service Worker for offline playback & caching
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then((reg) => {
+                        console.log('[PWA] Service Worker registered successfully:', reg.scope);
+                        const badge = document.getElementById('settingsOfflineBadge');
+                        if (badge) {
+                            badge.textContent = '✓ Offline Ready (Service Worker active)';
+                            badge.classList.add('offline-ready');
+                        }
+                    })
+                    .catch((err) => {
+                        console.warn('[PWA] Service Worker registration failed:', err);
+                        const badge = document.getElementById('settingsOfflineBadge');
+                        if (badge) {
+                            badge.textContent = '⚡ Web Mode (Local Storage ready)';
+                        }
+                    });
+            });
+        }
+
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        const banner = document.getElementById('pwaInstallBanner');
+        const bannerInstallBtn = document.getElementById('pwaBannerInstallBtn');
+        const bannerLaterBtn = document.getElementById('pwaBannerLaterBtn');
+        const headerInstallBtn = document.getElementById('headerInstallBtn');
+        const headerInstallText = document.getElementById('headerInstallText');
+        const menuInstallAppBtn = document.getElementById('menuInstallAppBtn');
+        const settingsInstallBtn = document.getElementById('settingsInstallBtn');
+        const settingsInstallBtnText = document.getElementById('settingsInstallBtnText');
+        const guideModal = document.getElementById('pwaInstallGuideModal');
+        const closeGuideBtn = document.getElementById('closePwaGuideModalBtn');
+        const closeGuideActionBtn = document.getElementById('closePwaGuideBtn');
+
+        function updateInstalledUI() {
+            if (headerInstallBtn) {
+                headerInstallBtn.classList.add('installed');
+                headerInstallBtn.title = 'App installed & ready for offline use';
+                if (headerInstallText) headerInstallText.textContent = 'Installed (Offline)';
+            }
+            if (settingsInstallBtnText) {
+                settingsInstallBtnText.textContent = 'App Installed (Offline Active)';
+            }
+            if (banner) {
+                banner.classList.add('hidden');
+            }
+        }
+
+        if (isStandalone) {
+            updateInstalledUI();
+        }
+
+        // 2. Capture beforeinstallprompt event
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            console.log('[PWA] beforeinstallprompt captured!');
+
+            const dismissed = sessionStorage.getItem('aqsound_pwa_banner_dismissed');
+            if (!dismissed && !isStandalone && banner) {
+                setTimeout(() => {
+                    banner.classList.remove('hidden');
+                }, 1200);
+            }
+        });
+
+        // 3. Prompt display timer if prompt is eligible and not yet dismissed
+        setTimeout(() => {
+            const dismissed = sessionStorage.getItem('aqsound_pwa_banner_dismissed');
+            if (!dismissed && !isStandalone && banner && banner.classList.contains('hidden')) {
+                banner.classList.remove('hidden');
+            }
+        }, 2000);
+
+        // 4. Handle Install triggers
+        async function triggerInstallFlow() {
+            if (isStandalone) {
+                showToast('AQSound Board is already running in installed offline mode!', 'info');
+                return;
+            }
+
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                try {
+                    const choiceResult = await deferredPrompt.userChoice;
+                    if (choiceResult && choiceResult.outcome === 'accepted') {
+                        console.log('[PWA] User accepted install prompt');
+                        showToast('Installing AQSound App...', 'success');
+                        if (banner) banner.classList.add('hidden');
+                    }
+                } catch (e) {
+                    console.log('[PWA] userChoice handled:', e);
+                }
+                deferredPrompt = null;
+            } else {
+                // If native prompt is not available, open guide modal
+                if (guideModal) {
+                    guideModal.classList.remove('hidden');
+                }
+            }
+        }
+
+        // Install button clicks
+        if (bannerInstallBtn) {
+            bannerInstallBtn.addEventListener('click', triggerInstallFlow);
+        }
+        if (headerInstallBtn) {
+            headerInstallBtn.addEventListener('click', triggerInstallFlow);
+        }
+        if (menuInstallAppBtn) {
+            menuInstallAppBtn.addEventListener('click', () => {
+                if (accountDropdownMenu) accountDropdownMenu.classList.add('hidden');
+                triggerInstallFlow();
+            });
+        }
+        if (settingsInstallBtn) {
+            settingsInstallBtn.addEventListener('click', triggerInstallFlow);
+        }
+
+        // Later button click (matches Image 2 LATER button)
+        if (bannerLaterBtn) {
+            bannerLaterBtn.addEventListener('click', () => {
+                if (banner) {
+                    banner.style.opacity = '0';
+                    banner.style.transform = 'translateY(16px)';
+                    setTimeout(() => {
+                        banner.classList.add('hidden');
+                        banner.style.opacity = '';
+                        banner.style.transform = '';
+                    }, 300);
+                }
+                sessionStorage.setItem('aqsound_pwa_banner_dismissed', 'true');
+                showToast('You can install the app anytime from the top bar or settings.', 'info');
+            });
+        }
+
+        // Guide modal close buttons
+        if (closeGuideBtn && guideModal) {
+            closeGuideBtn.addEventListener('click', () => guideModal.classList.add('hidden'));
+        }
+        if (closeGuideActionBtn && guideModal) {
+            closeGuideActionBtn.addEventListener('click', () => guideModal.classList.add('hidden'));
+        }
+        if (guideModal) {
+            guideModal.addEventListener('click', (e) => {
+                if (e.target === guideModal) guideModal.classList.add('hidden');
+            });
+        }
+
+        // 5. App installed listener
+        window.addEventListener('appinstalled', () => {
+            console.log('[PWA] AQSound App was successfully installed');
+            deferredPrompt = null;
+            updateInstalledUI();
+            showToast('AQSound App installed! All features and sounds are ready offline.', 'success');
+        });
+    }
+
     // ================= INITIALIZATION =================
     async function init() {
         getCurrentUser();
@@ -741,6 +904,7 @@
         await loadSoundboards();
         setupEventListeners();
         initGoogleOAuth();
+        initPWAOfflineSupport();
         switchMainView(currentMainView);
         updateSettingsUI();
     }

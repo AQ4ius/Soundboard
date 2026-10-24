@@ -1,0 +1,29 @@
+{
+  "name": "AQSound Board - Audio Master Control",
+  "short_name": "AQSound",
+  "description": "Professional soundboard with low-latency audio playback, multi-track dock, and full offline support.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0a0d14",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "AQSoundboard_Logo.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "favicon.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    }
+  ],
+  "categories": [
+    "utilities",
+    "music",
+    "entertainment"
+  ]
+}

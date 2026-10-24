@@ -6,6 +6,11 @@
     <title>AQSound | Audio Master Control</title>
     <link rel="icon" type="image/png" href="AQSoundboard_Logo.png">
     <link rel="apple-touch-icon" href="AQSoundboard_Logo.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0a0d14">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AQSound">
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -127,6 +132,14 @@
                     </svg>
                     <span>Add Sound</span>
                 </button>
+                <button id="headerInstallBtn" class="install-pill-btn" title="Install AQSound App for Offline Use">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    <span id="headerInstallText">Install App</span>
+                </button>
                 <button id="keybindMapBtn" class="icon-btn-bordered" title="View All Keybinds">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="2" y="4" width="20" height="16" rx="2"></rect>
@@ -180,6 +193,14 @@
                                 <line x1="15" y1="12" x2="3" y2="12"></line>
                             </svg>
                             <span>Sign In / Switch Account</span>
+                        </button>
+                        <button type="button" class="account-menu-action" id="menuInstallAppBtn" style="font-weight:600;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            <span>Install App (Offline Use)</span>
                         </button>
                         <div class="account-menu-divider"></div>
                         <button type="button" class="account-menu-action danger" id="signOutBtn">
@@ -605,6 +626,22 @@
                 </div>
 
                 <div class="settings-section">
+                    <h3>📱 Offline App & Installation</h3>
+                    <p>Install AQSound to your computer or mobile home screen. Enjoy zero-latency audio, fullscreen stage view, and 100% offline access with no internet needed.</p>
+                    <div class="settings-actions" style="align-items:center; gap:12px;">
+                        <button id="settingsInstallBtn" class="pill-btn highlight" type="button">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            <span id="settingsInstallBtnText">Install Soundboard App</span>
+                        </button>
+                        <span id="settingsOfflineBadge" class="pwa-status-badge offline-ready">✓ Offline Ready (Service Worker active)</span>
+                    </div>
+                </div>
+
+                <div class="settings-section">
                     <h3>Reset Options</h3>
                     <p>Reset your active soundboard setup back to initial default categories, sounds, and keybind mappings.</p>
                     <button id="resetDefaultsBtn" class="danger-btn outline">Reset to Default Sounds</button>
@@ -952,6 +989,75 @@
                     <button type="submit" class="primary-btn">Reset Password</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- PWA Install Banner (Image 2 style) -->
+    <aside id="pwaInstallBanner" class="pwa-install-banner hidden" aria-label="Install App Prompt">
+        <div class="pwa-banner-content">
+            <div class="pwa-banner-icon-wrap">
+                <img src="AQSoundboard_Logo.png" alt="AQSound Icon" class="pwa-banner-icon">
+            </div>
+            <div class="pwa-banner-text">
+                <strong class="pwa-banner-title">Install AQSound App</strong>
+                <p class="pwa-banner-desc">Get standalone fullscreen playback on your home screen. Works 100% offline.</p>
+            </div>
+            <div class="pwa-banner-actions">
+                <button type="button" id="pwaBannerInstallBtn" class="pwa-btn-install">INSTALL</button>
+                <button type="button" id="pwaBannerLaterBtn" class="pwa-btn-later">LATER</button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- PWA INSTALL GUIDE MODAL (for Safari iOS & Manual install) -->
+    <div id="pwaInstallGuideModal" class="modal-backdrop hidden">
+        <div class="modal-card pwa-guide-card">
+            <div class="modal-header">
+                <h2>Install Soundboard App</h2>
+                <button class="modal-close" id="closePwaGuideModalBtn">✕</button>
+            </div>
+            <div class="modal-body pwa-guide-body">
+                <div class="pwa-guide-hero">
+                    <img src="AQSoundboard_Logo.png" alt="AQSound Logo" class="pwa-guide-logo">
+                    <div>
+                        <h3 style="margin:0 0 4px 0; color:#fff;">AQSound Board</h3>
+                        <p class="pwa-guide-subtitle">Standalone Audio Player & 100% Offline Soundboard</p>
+                    </div>
+                </div>
+                
+                <div class="pwa-guide-steps">
+                    <div class="pwa-step-item">
+                        <span class="pwa-step-num">1</span>
+                        <div>
+                            <strong>Google Chrome / Microsoft Edge (Desktop)</strong>
+                            <p>Click the <strong>Install</strong> icon (💻 or ⊕) in your browser's address bar at the top-right, or click the Install button in the header.</p>
+                        </div>
+                    </div>
+                    <div class="pwa-step-item">
+                        <span class="pwa-step-num">2</span>
+                        <div>
+                            <strong>Apple iOS (Safari on iPhone / iPad)</strong>
+                            <p>Tap the <strong>Share</strong> button (⎙) in the Safari toolbar, scroll down and tap <strong>Add to Home Screen</strong> (+), then tap <strong>Add</strong>.</p>
+                        </div>
+                    </div>
+                    <div class="pwa-step-item">
+                        <span class="pwa-step-num">3</span>
+                        <div>
+                            <strong>Android (Chrome / Samsung / Brave)</strong>
+                            <p>Tap the browser menu (⋮) and choose <strong>Install App</strong> or <strong>Add to Home screen</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pwa-offline-features">
+                    <div class="pwa-feature"><span class="check-icon">✓</span> 100% Offline Playback</div>
+                    <div class="pwa-feature"><span class="check-icon">✓</span> Zero Lag Audio Response</div>
+                    <div class="pwa-feature"><span class="check-icon">✓</span> Retains Custom Sounds & Keybinds</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="primary-btn" id="closePwaGuideBtn">Got it</button>
+            </div>
         </div>
     </div>
 
