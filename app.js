@@ -893,7 +893,144 @@
             deferredPrompt = null;
             updateInstalledUI();
             showToast('AQSound App installed! All features and sounds are ready offline.', 'success');
+            // Download all sounds for offline use upon install
+            downloadAllDefaultSounds(true);
         });
+
+        // 6. Offline Audio Storage & Background Pre-caching
+        const OFFLINE_CACHE_NAME = 'aqsound-offline-v2';
+        const offlineCountBadge = document.getElementById('offlineSoundsCountBadge');
+        const offlineProgressWrap = document.getElementById('offlineProgressWrap');
+        const offlineProgressBar = document.getElementById('offlineProgressBar');
+        const downloadAllSoundsBtn = document.getElementById('downloadAllSoundsBtn');
+
+        async function getCachedAudioStatus() {
+            if (!('caches' in window)) return { cached: 0, total: 0, missing: [] };
+            try {
+                const cache = await caches.open(OFFLINE_CACHE_NAME);
+                const defaultSoundsList = window.DEFAULT_SOUNDS || [];
+                const total = defaultSoundsList.length;
+                let cached = 0;
+                const missing = [];
+
+                for (const s of defaultSoundsList) {
+                    if (!s.src) continue;
+                    const fullUrl = new URL(s.src, window.location.href).href;
+                    const match = await cache.match(s.src) || await cache.match(fullUrl);
+                    if (match) {
+                        cached++;
+                    } else {
+                        missing.push(s);
+                    }
+                }
+                return { cached, total, missing };
+            } catch (e) {
+                console.warn('[Offline Cache] Check failed:', e);
+                return { cached: 0, total: 0, missing: [] };
+            }
+        }
+
+        async function updateOfflineAudioStatusUI() {
+            if (!offlineCountBadge) return;
+            const status = await getCachedAudioStatus();
+            if (status.total === 0) return;
+
+            const pct = Math.round((status.cached / status.total) * 100);
+            if (status.cached === status.total) {
+                offlineCountBadge.textContent = `✓ ${status.cached} / ${status.total} sounds cached (100% Offline Ready)`;
+                offlineCountBadge.style.color = '#34d399';
+                if (downloadAllSoundsBtn) {
+                    downloadAllSoundsBtn.innerHTML = `
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>All Sounds Ready Offline</span>
+                    `;
+                    downloadAllSoundsBtn.classList.add('installed');
+                }
+                if (offlineProgressWrap) offlineProgressWrap.style.display = 'none';
+            } else {
+                offlineCountBadge.textContent = `${status.cached} / ${status.total} sounds cached (${pct}%)`;
+                offlineCountBadge.style.color = 'var(--text-secondary)';
+            }
+        }
+
+        let isDownloadingAllSounds = false;
+        async function downloadAllDefaultSounds(showToasts = true) {
+            if (isDownloadingAllSounds) return;
+            if (!navigator.onLine) {
+                if (showToasts) showToast('Cannot download sounds while offline. Connect to Wi-Fi first.', 'warning');
+                return;
+            }
+
+            isDownloadingAllSounds = true;
+            if (offlineProgressWrap) offlineProgressWrap.style.display = 'block';
+            if (downloadAllSoundsBtn) {
+                downloadAllSoundsBtn.disabled = true;
+                downloadAllSoundsBtn.textContent = 'Downloading sounds for offline...';
+            }
+
+            try {
+                const cache = await caches.open(OFFLINE_CACHE_NAME);
+                const defaultSoundsList = window.DEFAULT_SOUNDS || [];
+                const total = defaultSoundsList.length;
+                let cachedCount = 0;
+
+                for (let i = 0; i < defaultSoundsList.length; i++) {
+                    const sound = defaultSoundsList[i];
+                    if (!sound.src) continue;
+
+                    const fullUrl = new URL(sound.src, window.location.href).href;
+                    const existing = await cache.match(sound.src) || await cache.match(fullUrl);
+                    if (existing) {
+                        cachedCount++;
+                    } else {
+                        try {
+                            const resp = await fetch(fullUrl, { headers: { 'Cache-Control': 'no-cache' } });
+                            if (resp && resp.status === 200) {
+                                await cache.put(sound.src, resp.clone());
+                                await cache.put(fullUrl, resp.clone());
+                                cachedCount++;
+                            }
+                        } catch (err) {
+                            console.warn('[Offline Cache] Sound fetch skipped:', sound.title, err);
+                        }
+                    }
+
+                    const pct = Math.round(((i + 1) / total) * 100);
+                    if (offlineProgressBar) offlineProgressBar.style.width = pct + '%';
+                    if (offlineCountBadge) offlineCountBadge.textContent = `Downloading: ${cachedCount} / ${total} sounds (${pct}%)`;
+                }
+
+                if (showToasts) {
+                    showToast(`All ${cachedCount} sounds successfully downloaded! Ready 100% offline.`, 'success');
+                }
+            } catch (e) {
+                console.error('[Offline Cache] Download error:', e);
+                if (showToasts) showToast('Some sounds could not be downloaded. Please check connection.', 'error');
+            } finally {
+                isDownloadingAllSounds = false;
+                if (downloadAllSoundsBtn) downloadAllSoundsBtn.disabled = false;
+                updateOfflineAudioStatusUI();
+            }
+        }
+
+        if (downloadAllSoundsBtn) {
+            downloadAllSoundsBtn.addEventListener('click', () => downloadAllDefaultSounds(true));
+        }
+
+        // Initialize status and auto-cache quietly in background after app loads
+        setTimeout(() => {
+            updateOfflineAudioStatusUI();
+            if (navigator.onLine) {
+                getCachedAudioStatus().then((status) => {
+                    if (status.missing && status.missing.length > 0) {
+                        console.log(`[Offline Cache] Auto-caching ${status.missing.length} sounds in background...`);
+                        downloadAllDefaultSounds(false);
+                    }
+                });
+            }
+        }, 2000);
     }
 
     // ================= INITIALIZATION =================
@@ -1471,6 +1608,28 @@
             updateCardPlayState(soundId, true);
         }).catch(async (err) => {
             console.warn('Initial playback failed for', sound.title, err);
+
+            // OFFLINE FALLBACK: If network/Wi-Fi is off, retrieve audio from Service Worker Cache as direct Blob Object URL
+            if ('caches' in window && sound.src) {
+                try {
+                    const cache = await caches.open('aqsound-offline-v2');
+                    const fullUrl = new URL(sound.src, window.location.href).href;
+                    const cachedMatch = await cache.match(sound.src) || await cache.match(fullUrl);
+                    if (cachedMatch) {
+                        console.log('[Offline Audio] Restoring audio from cache blob for', sound.title);
+                        const blob = await cachedMatch.blob();
+                        const blobUrl = URL.createObjectURL(blob);
+                        audio.src = blobUrl;
+                        audio.load();
+                        await audio.play();
+                        trackActiveAudio(sound, audio);
+                        updateCardPlayState(soundId, true);
+                        return;
+                    }
+                } catch (cacheErr) {
+                    console.warn('[Offline Audio] Blob cache playback error:', cacheErr);
+                }
+            }
 
             // If an <audio> element failed and it might be an MP4 or container issue, try <video> element fallback
             if (!(audio instanceof HTMLVideoElement) && (sound.src.includes('.mp4') || err.name === 'NotSupportedError')) {

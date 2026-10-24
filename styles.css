@@ -1730,13 +1730,19 @@ body {
     }
     body {
         padding-top: 0;
+        overflow-x: hidden;
     }
     .app-header {
-        position: relative;
+        position: sticky;
+        top: 0;
+        z-index: 50;
         flex-direction: column;
         align-items: stretch;
         gap: 8px;
-        padding: 10px 12px;
+        padding: 8px 12px;
+        background: rgba(10, 13, 20, 0.98);
+        border-bottom: 1px solid var(--border-color);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
     }
     .header-left {
         width: 100%;
@@ -1747,10 +1753,13 @@ body {
         gap: 8px;
     }
     .brand {
-        gap: 8px;
+        gap: 6px;
     }
     .brand-title h1 {
-        font-size: 16px;
+        font-size: 15px;
+    }
+    .brand-subtitle {
+        display: none;
     }
     .brand-logo-img {
         width: 26px;
@@ -1759,26 +1768,30 @@ body {
     .nav-view-switcher {
         width: 100%;
         display: flex;
-        margin: 4px 0;
+        gap: 4px;
+        margin: 2px 0;
     }
     .view-switch-btn {
         flex: 1;
         justify-content: center;
-        padding: 7px 10px;
-        font-size: 12px;
+        padding: 6px 8px;
+        font-size: 11.5px;
     }
     .status-chips {
         display: flex;
         gap: 6px;
     }
     .status-chip {
-        padding: 3px 8px;
-        font-size: 11px;
+        padding: 3px 7px;
+        font-size: 10.5px;
     }
     .header-center {
         width: 100%;
         order: 2;
         margin: 2px 0;
+    }
+    .search-box {
+        width: 100%;
     }
     .header-right {
         width: 100%;
@@ -1787,28 +1800,34 @@ body {
         flex-wrap: wrap;
         align-items: center;
         justify-content: space-between;
-        gap: 8px;
+        gap: 6px;
+        margin-top: 2px;
     }
     .mode-toggles {
         display: flex;
         gap: 4px;
     }
     .pill-btn {
-        padding: 6px 9px;
+        padding: 5px 8px;
         font-size: 11px;
     }
     .master-volume-control {
+        display: flex;
+        align-items: center;
         gap: 4px;
+        background: rgba(255, 255, 255, 0.04);
+        padding: 3px 6px;
+        border-radius: var(--radius-sm);
     }
     .master-volume-control input[type="range"] {
-        width: 55px;
+        width: 48px;
     }
     #masterVolumeValue {
         font-size: 10px;
-        min-width: 28px;
+        min-width: 26px;
     }
     .panic-btn {
-        padding: 6px 10px;
+        padding: 5px 10px;
         font-size: 11px;
     }
     .panic-btn .kbd-hint {
@@ -1817,15 +1836,48 @@ body {
     .header-actions {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 4px;
+        flex-wrap: wrap;
+    }
+    .header-actions .primary-btn {
+        padding: 5px 8px;
+        font-size: 11px;
+        gap: 4px;
+    }
+    .install-pill-btn {
+        padding: 5px 8px;
+        font-size: 11px;
+        gap: 4px;
+    }
+    .icon-btn-bordered {
+        width: 28px;
+        height: 28px;
+        padding: 4px;
+    }
+    .user-account-btn {
+        padding: 2px 6px 2px 2px;
+        gap: 4px;
+    }
+    .user-meta {
+        display: none; /* Hide verbose username badge on small screens */
+    }
+
+    /* Main Content */
+    .main-content {
+        padding: 10px 10px 30px 10px;
+        max-width: 100%;
+        box-sizing: border-box;
     }
 
     /* Folders Section */
+    .home-folders-view {
+        padding: 12px 10px;
+    }
     .folders-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 12px;
-        margin-bottom: 16px;
+        gap: 10px;
+        margin-bottom: 12px;
     }
     .folders-header-right {
         width: 100%;
@@ -1836,20 +1888,20 @@ body {
     }
     .folders-grid {
         grid-template-columns: 1fr;
-        gap: 12px;
+        gap: 10px;
     }
 
     /* Stage Soundboard Breadcrumb */
     .folder-breadcrumb-bar {
         flex-direction: column;
         align-items: stretch;
-        gap: 10px;
-        padding: 10px 12px;
+        gap: 8px;
+        padding: 8px 10px;
     }
     .folder-breadcrumb-actions {
         display: flex;
         width: 100%;
-        gap: 8px;
+        gap: 6px;
     }
     .folder-breadcrumb-actions button {
         flex: 1;
@@ -1858,32 +1910,104 @@ body {
 
     /* Categories Bar */
     .categories-bar {
-        padding: 0 10px;
+        padding: 4px 8px;
+        height: auto;
+        min-height: 44px;
+        position: sticky;
+        top: 0;
+        z-index: 45;
+        gap: 6px;
     }
-    .category-chips-wrapper {
-        gap: 4px;
+    .cat-nav-btn {
+        display: none !important; /* Touch mobile users swipe categories horizontally */
+    }
+    .categories-scroll {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding: 4px 0;
+    }
+    .categories-scroll::-webkit-scrollbar {
+        display: none;
     }
     .category-chip {
         padding: 5px 12px;
-        font-size: 12px;
+        font-size: 11.5px;
         white-space: nowrap;
+        flex-shrink: 0;
     }
-    .cat-scroll-btn {
-        display: none; /* Mobile users swipe horizontally */
+    .view-controls {
+        display: flex;
+        gap: 4px;
+        flex-shrink: 0;
+    }
+    .view-controls .pill-btn {
+        padding: 4px 7px;
+        font-size: 10.5px;
     }
 
-    /* Soundboard Cards Grid */
-    .soundboard-grid {
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: 8px;
-        padding: 0;
+    /* SOUND GRID MOBILE FIX (Targeting .sound-grid) */
+    .sound-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+        padding: 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
     }
     .sound-card {
-        padding: 10px 8px;
-        min-height: 90px;
+        padding: 10px 8px !important;
+        min-height: 98px !important;
+        box-sizing: border-box !important;
+        border-radius: var(--radius-md) !important;
     }
-    .card-title {
-        font-size: 12px;
+    .card-badges {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 3px !important;
+        max-width: calc(100% - 30px) !important;
+    }
+    .category-badge, .type-badge {
+        font-size: 9px !important;
+        padding: 1px 5px !important;
+    }
+    .keycap-badge {
+        font-size: 9.5px !important;
+        padding: 2px 5px !important;
+        min-width: 20px !important;
+        height: 19px !important;
+    }
+    .sound-title {
+        font-size: 12.5px !important;
+        line-height: 1.25 !important;
+        margin: 4px 0 !important;
+        display: -webkit-box !important;
+        -webkit-line-clamp: 2 !important;
+        -webkit-box-orient: vertical !important;
+        overflow: hidden !important;
+        word-break: break-word !important;
+    }
+    .card-bottom {
+        margin-top: 4px !important;
+        padding-top: 4px !important;
+        gap: 4px !important;
+    }
+    .card-play-trigger {
+        font-size: 11px !important;
+        gap: 5px !important;
+    }
+    .play-btn-circle {
+        width: 22px !important;
+        height: 22px !important;
+    }
+    .card-btn {
+        width: 24px !important;
+        height: 24px !important;
     }
 
     /* Pinned Tray on Mobile */
@@ -1891,7 +2015,7 @@ body {
         box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.7);
     }
     .sfx-tray-header {
-        padding: 6px 12px;
+        padding: 6px 10px;
     }
     .sfx-tray-list {
         padding: 8px 10px;
@@ -1899,20 +2023,20 @@ body {
         -webkit-overflow-scrolling: touch;
     }
     .quick-sfx-btn {
-        padding: 6px 10px;
+        padding: 5px 9px;
         font-size: 11px;
     }
 
     /* Now Playing Multi-Track Dock on Mobile */
     .now-playing-dock {
         padding: 8px 10px;
-        max-height: 240px;
+        max-height: 220px;
     }
     .dock-track-row {
         flex-direction: column;
         align-items: stretch;
-        gap: 8px;
-        padding: 8px;
+        gap: 6px;
+        padding: 6px 8px;
     }
     .dock-left {
         min-width: 100%;
@@ -1964,21 +2088,30 @@ body {
 }
 
 @media (max-width: 480px) {
-    .brand-subtitle {
-        display: none;
-    }
     .brand-title h1 {
-        font-size: 15px;
+        font-size: 14px;
     }
     #openAddModalBtn span {
         display: none;
     }
     #openAddModalBtn {
-        padding: 6px;
+        padding: 5px 7px;
     }
-    .soundboard-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
+    #headerInstallText {
+        display: none;
+    }
+    .install-pill-btn {
+        padding: 5px 7px;
+    }
+    .sound-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 6px !important;
+    }
+}
+
+@media (max-width: 340px) {
+    .sound-grid {
+        grid-template-columns: 1fr !important;
     }
 }
 
@@ -2551,20 +2684,23 @@ body.has-dock .general-sfx-tray {
 
 /* Dynamic page bottom padding for general sfx tray and dock */
 body {
-    padding-bottom: 150px;
+    padding-bottom: 24px;
     transition: padding-bottom 0.25s ease;
 }
-body.has-dock {
-    padding-bottom: calc(var(--dock-height) + 150px);
-}
-body.sfx-tray-collapsed {
-    padding-bottom: 70px;
-}
-body.sfx-tray-collapsed.has-dock {
-    padding-bottom: calc(var(--dock-height) + 70px);
-}
 body.is-home-view {
-    padding-bottom: 40px !important;
+    padding-bottom: 24px !important;
+}
+body:not(.is-home-view) {
+    padding-bottom: 120px;
+}
+body:not(.is-home-view).sfx-tray-collapsed {
+    padding-bottom: 48px;
+}
+body:not(.is-home-view).has-dock {
+    padding-bottom: calc(var(--dock-height, 80px) + 120px);
+}
+body:not(.is-home-view).sfx-tray-collapsed.has-dock {
+    padding-bottom: calc(var(--dock-height, 80px) + 48px);
 }
 
 /* Brand Logo Image in Header */

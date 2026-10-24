@@ -626,9 +626,9 @@
                 </div>
 
                 <div class="settings-section">
-                    <h3>📱 Offline App & Installation</h3>
+                    <h3>📱 Offline App & Audio Storage</h3>
                     <p>Install AQSound to your computer or mobile home screen. Enjoy zero-latency audio, fullscreen stage view, and 100% offline access with no internet needed.</p>
-                    <div class="settings-actions" style="align-items:center; gap:12px;">
+                    <div class="settings-actions" style="align-items:center; gap:12px; flex-wrap:wrap; margin-bottom: 12px;">
                         <button id="settingsInstallBtn" class="pill-btn highlight" type="button">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -637,7 +637,27 @@
                             </svg>
                             <span id="settingsInstallBtnText">Install Soundboard App</span>
                         </button>
-                        <span id="settingsOfflineBadge" class="pwa-status-badge offline-ready">✓ Offline Ready (Service Worker active)</span>
+                        <span id="settingsOfflineBadge" class="pwa-status-badge offline-ready">✓ Offline Ready</span>
+                    </div>
+
+                    <div class="offline-cache-box" style="background:rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:8px; padding:12px; margin-top:8px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
+                            <strong style="font-size:13px; color:#fff;">Offline Audio Files:</strong>
+                            <span id="offlineSoundsCountBadge" style="font-size:12px; color:var(--text-secondary); font-weight:600;">Checking cache...</span>
+                        </div>
+                        <div id="offlineProgressWrap" style="display:none; width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden; margin-bottom:10px;">
+                            <div id="offlineProgressBar" style="width:0%; height:100%; background:linear-gradient(90deg, #3b82f6, #10b981); transition:width 0.2s ease;"></div>
+                        </div>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <button id="downloadAllSoundsBtn" class="pill-btn" type="button" style="font-size:12px; padding:6px 12px;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                <span>Download All Sounds for Offline</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
